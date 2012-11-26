@@ -84,7 +84,7 @@ class ReduceManager:
 
     def __copy_input_htod(self, input_data_host):
 
-        assert input_data_host.shape[0] <  self._max_num_elements
+        assert input_data_host.shape[0] <= self._max_num_elements
         assert input_data_host.dtype    == numpy.float32
 
         pycuda.driver.memcpy_htod(self._scratchpad_device, input_data_host)

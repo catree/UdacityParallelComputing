@@ -136,7 +136,6 @@ class PrefixSumManager:
 
     _max_num_elements                = -1
     _n                               = -1
-    _num_elements_to_pad             = -1
     _input_data_resized_num_elements = -1
     _input_data_resized_num_threads  = -1
     _input_data_device               = -1
@@ -146,7 +145,13 @@ class PrefixSumManager:
 
     def __init__(self, max_num_elements):
 
-        assert max_num_elements < self._block_size_num_elements**2
+        num_elements_to_pad = 0
+        if max_num_elements % self._block_size_num_elements != 0:
+            num_elements_to_pad = self._block_size_num_elements - (max_num_elements % self._block_size_num_elements)
+
+        max_num_elements = max_num_elements + num_elements_to_pad
+        
+        assert max_num_elements <= self._block_size_num_elements**2
         
         self._max_num_elements          = max_num_elements
         self._num_bytes                 = self._max_num_elements * self._size_of_element_bytes
@@ -159,7 +164,7 @@ class PrefixSumManager:
     def __copy_input_htod(self, input_data_host):
 
         assert input_data_host.shape[0] <  self._block_size_num_elements**2
-        assert input_data_host.shape[0] <  self._max_num_elements
+        assert input_data_host.shape[0] <= self._max_num_elements
         assert input_data_host.dtype    == numpy.uint32
 
         pycuda.driver.memcpy_htod(self._input_data_device, input_data_host)
@@ -168,14 +173,14 @@ class PrefixSumManager:
 
         self._n = num_elements
 
-        self._num_elements_to_pad = 0
+        num_elements_to_pad = 0
         if self._n % self._block_size_num_elements != 0:
-            self._num_elements_to_pad = self._block_size_num_elements - (self._n % self._block_size_num_elements)
+            num_elements_to_pad = self._block_size_num_elements - (self._n % self._block_size_num_elements)
 
-        self._input_data_resized_num_elements = self._n + self._num_elements_to_pad
+        self._input_data_resized_num_elements = self._n + num_elements_to_pad
         self._input_data_resized_num_threads  = self._input_data_resized_num_elements / 2
 
-        assert self._input_data_resized_num_elements < self._max_num_elements
+        assert self._input_data_resized_num_elements <= self._max_num_elements
         
         pycuda.driver.memset_d32(self._input_data_resized_device, 0, self._input_data_resized_num_elements)
         pycuda.driver.memset_d32(self._prefix_sum_device,         0, self._input_data_resized_num_elements)

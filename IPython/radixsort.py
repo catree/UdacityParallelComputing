@@ -94,7 +94,7 @@ class RadixSortManager:
 
     def __copy_input_htod_key(self, input_keys_host):
 
-        assert input_keys_host.shape[0] <  self._max_num_elements
+        assert input_keys_host.shape[0] <= self._max_num_elements
 
         assert \
             input_keys_host.dtype == numpy.uint32  or \
@@ -106,7 +106,7 @@ class RadixSortManager:
     def __copy_input_htod_key_value(self, input_keys_host, input_values_host):
 
         assert input_keys_host.shape[0] == input_values_host.shape[0]
-        assert input_keys_host.shape[0] <  self._max_num_elements
+        assert input_keys_host.shape[0] <= self._max_num_elements
 
         assert \
             input_keys_host.dtype == numpy.uint32  or \
@@ -123,7 +123,7 @@ class RadixSortManager:
 
     def __radix_sort_key(self, input_keys_device, output_keys_device, num_elements, compute_flags_function):
 
-        assert num_elements < self._max_num_elements
+        assert num_elements <= self._max_num_elements
 
         self._n = num_elements
 
@@ -156,7 +156,7 @@ class RadixSortManager:
         
     def __radix_sort_key_value(self, input_keys_device, input_values_device, output_keys_device, output_values_device, num_elements, compute_flags_function):
 
-        assert num_elements < self._max_num_elements
+        assert num_elements <= self._max_num_elements
 
         self._n = num_elements
 

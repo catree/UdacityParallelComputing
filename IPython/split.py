@@ -69,7 +69,7 @@ class SplitManager:
 
     def __copy_input_htod(self, input_data_host, flag_data_host):
 
-        assert input_data_host.shape[0] < self._max_num_elements
+        assert input_data_host.shape[0] <= self._max_num_elements
         assert \
             input_data_host.dtype == numpy.uint32  or \
             input_data_host.dtype == numpy.int32   or \
@@ -80,7 +80,7 @@ class SplitManager:
         
     def __split(self, input_data_device, flag_data_device, output_data_device, num_elements):
 
-        assert num_elements < self._max_num_elements
+        assert num_elements <= self._max_num_elements
 
         self._n = num_elements
         
