@@ -7,60 +7,89 @@ import string
 import subprocess
 import json
 import base64
+import hashlib
 
+#strip all timing strings from the output
+def stripTimingPrints(inputString):
+    timingStringIdentifier = 'e57__TIMING__f82'
+    pos = inputString.find(timingStringIdentifier)
+    if pos == -1:
+        return inputString, ''
+    else:
+        for line in inputString.split('\n'):
+            if line.startswith(timingStringIdentifier):
+                time = line.split()[3]
+        inputString = inputString[0:pos] + inputString[pos + len(timingStringIdentifier):]
+        if timingStringIdentifier in inputString:
+            #more than one!! bad news...probably cheating attempt
+            return 'There is no reason to output the string ' + timingStringIdentifier + ' in your code\nCheating Suspected - Automatic Fail', ''
+        else:
+            return inputString, time
 
 def runCudaAssignment():
     stdOutput = StringIO.StringIO()
+    results = {'Makefile':'', 'progOutput':'', 'compareOutput': '', 'compareResult':False, 'time':''}
 
     #call make, capture stderr & stdout
     #if make fails, quit and dump errors to student
     try:
-        stdOutput.write(subprocess.check_output(['make'], stdout = stdOutput, stderr = subprocess.STDOUT))
+        results['Makefile'] = subprocess.check_output(['make', '-s'], stderr = subprocess.STDOUT)
     except subprocess.CalledProcessError, e:
         #output make error(s)
-        print e.output
+        results['Makefile'] = e.output
+        print json.dumps(results)
         return
 
+    
     #generate a random output name so that students cannot copy the gold file
     #directly to the output file
     random_output_name = ''.join(random.choice(string.ascii_lowercase) for x in range(10)) + '.png'
 
     #run their compiled code
     try:
-        stdOutput.write(subprocess.check_output(['./hw', 'cinque_terre_small.jpg', random_output_name], stdout = stdOutput, stderr = subprocess.STDOUT))
+        progOutput = subprocess.check_output(['./hw', 'cinque_terre_small.jpg', random_output_name], stderr = subprocess.STDOUT)
     except subprocess.CalledProcessError, e:
         #program failed, dump possible Make warnings, program output and quit
-        print stdOutput.getvalue(), e.output
+        progOutput, time = stripTimingPrints(e.output)
+        results['progOutput'] = e.output
+        print json.dumps(results)
         return
 
-    #gather timing information from stdOutput
-    foundTiming = False
-    for line in stdOutput.getvalue().split('\n'):
-        if line.startswith('TIMING'): #TODO this string is not set yet
-            if foundTiming:
-                print 'Do not add your own print beginning with TIMING!!'
-                print stdOutput.getvalue()
-                return
-            foundTiming = True
-            time = line.split()[5] #TODO making this index up right now
-
-    print 'time', time
-
-    #We should've found a timing statement
-    if not foundTiming:
-        print 'Something bad has happened, timing statement should have been found'
-        print stdOutput.getvalue()
-        return
+    progOutput, time = stripTimingPrints(progOutput)
+    results['progOutput'] = progOutput
+    results['time'] =       time
 
     #run compare to see if the output is correct
+    #get md5 hash of compare executable and check with known result to avoid tampering...
     try:
-        stdOutput.write(subprocess.check_output(['./compare', 'cinque_terre.gold', random_output_name], stdout = stdOutput, stderr = subprocess.STDOUT))
+        hashVal = hashlib.sha1(open('./compare', 'rb').read()).hexdigest()
+    except IOError, e:
+        #probably couldn't open compare - a bad sign
+        results['compare'] = e
+        print json.dumps(results)
+        return
+ 
+    #Uncomment these lines once the SHA1 value of the compare executable is known
+
+    #goldHashVal = '?' #TODO needs to be determined for server (ideally precompiled executable)
+
+    #if not hashVal == goldHashVal:
+    #    results['compare'] = 'Compare executable has been modified!'
+    #    print json.dumps(results)
+    #    return
+
+    try:
+        results['compareOutput'] = subprocess.check_output(['./compare', 'cinque_terre.gold', random_output_name], stderr = subprocess.STDOUT)
     except subprocess.CalledProcessError, e:
         #images don't match
         #dump image anyway?
-        print stdOutput.getValue(), e.output
+        results['compareOutput'] = e.output
+        print json.dumps(results)
         return
 
+    results['compareResult'] = True
+
+    print results.dumps(results)
     #everything looks good, open image and return it with magic strings
     imageFile = open(random_output_name, 'rb').read()
 
@@ -68,17 +97,13 @@ def runCudaAssignment():
     image_start = 'BEGIN_IMAGE_f9825uweof8jw9fj4r8'
     image_end   = 'END_IMAGE_0238jfw08fjsiufhw8frs'
 
-    stdOutput.write(image_start)
-
     data = {}
     data['name'] = 'StudentImage'
     data['format'] = 'png'
     data['bytes'] = base64.encodestring(imageFile)
 
-    stdOutput.write(json.dumps(data) + image_end)
+    print image_start + json.dumps(data) + image_end
 
-    #now actually write everything to stdout
-    print stdOutput.getvalue()
 
 if __name__ == "__main__":
     runCudaAssignment()
