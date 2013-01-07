@@ -1,8 +1,12 @@
+#ifndef UTILS_H__
+#define UTILS_H__
+
 #include <iostream>
 #include <iomanip>
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <cassert>
+#include <cmath>
 
 #define checkCudaErrors(val) check( (val), #val, __FILE__, __LINE__)
 
@@ -54,3 +58,5 @@ void checkResultsEps(const T* const ref, const T* const gpu, size_t numElem, dou
     exit(1);
   }
 }
+
+#endif

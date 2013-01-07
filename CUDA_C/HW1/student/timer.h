@@ -1,4 +1,8 @@
+#ifndef TIMER_H__
+#define TIMER_H__
+
 #include <sys/time.h>
+#include <cuda_runtime.h>
 
 //very simple timer that just returns elapsed time
 //since the last call
@@ -20,3 +24,5 @@ double tick(void) {
     return 0;
   }
 }
+
+#endif
