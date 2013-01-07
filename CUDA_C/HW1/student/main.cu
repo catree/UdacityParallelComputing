@@ -44,7 +44,7 @@ int main(int argc, char **argv) {
   //call the students' code
   your_rgba_to_greyscale(h_rgbaImage, d_rgbaImage, d_greyImage, numRows(), numCols());
   checkCudaErrors(cudaDeviceSynchronize());
-  std::cout << "Processing took: " << tick() << " msecs." << std::endl;
+  std::cout << "e57__TIMING__f82 Processing took: " << tick() << " msecs." << std::endl;
 
   //check results and output the grey image
   postProcess(output_file);
