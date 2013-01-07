@@ -1,4 +1,10 @@
 NVCC=nvcc
+
+###################################
+# These are the default install   #
+# locations on most linux distros #
+###################################
+
 OPENCV_LIBPATH=/usr/lib
 OPENCV_INCLUDEPATH=/usr/include
 
