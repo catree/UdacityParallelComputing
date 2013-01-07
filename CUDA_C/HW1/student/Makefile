@@ -1,6 +1,6 @@
 NVCC=nvcc
-OPENCV_LIBPATH=/usr/local/lib
-OPENCV_INCLUDEPATH=/usr/local/include
+OPENCV_LIBPATH=/usr/lib         #/usr/local/lib
+OPENCV_INCLUDEPATH=/usr/include #/usr/local/include
 OPENCV_LIBS=-lopencv_core -lopencv_imgproc -lopencv_highgui
 CUDA_INCLUDEPATH=/usr/local/cuda-5.0/include
 
@@ -9,7 +9,7 @@ NVCC_OPTS=-O3 -arch=sm_20 -Xcompiler -Wall -Xcompiler -Wextra
 GCC_OPTS=-O3 -Wall -Wextra
 
 student: compare HW1.o main.o student_func.o
-	$(NVCC) -o hw1 main.o HW1.o student_func.o -L $(OPENCV_LIBPATH) $(OPENCV_LIBS)
+	$(NVCC) -o hw main.o HW1.o student_func.o -L $(OPENCV_LIBPATH) $(OPENCV_LIBS)
 
 HW1.o: HW1.cpp utils.h Makefile
 	g++ -c HW1.cpp $(GCC_OPTS) -I $(OPENCV_INCLUDEPATH) -I $(CUDA_INCLUDEPATH)
