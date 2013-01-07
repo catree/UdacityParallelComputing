@@ -24,7 +24,8 @@ int main(int argc, char **argv) {
   }
 
   if (gold.size() != test.size()) {
-    std::cerr << "Images have different sizes! " << gold.size() << " " << test.size() << std::endl;
+    std::cerr << "Images have different sizes! [" << gold.rows << ", " << gold.cols << "] [" 
+              << test.rows << ", " << test.cols << "]" << std::endl;
     exit(1);
   }
 
