@@ -89,7 +89,7 @@ def runCudaAssignment():
 
     results['compareResult'] = True
 
-    print results.dumps(results)
+    print json.dumps(results)
     #everything looks good, open image and return it with magic strings
     imageFile = open(random_output_name, 'rb').read()
 
