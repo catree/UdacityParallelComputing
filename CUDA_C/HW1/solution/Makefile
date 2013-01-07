@@ -8,7 +8,7 @@ NVCC_OPTS=-O3 -arch=sm_20 -Xcompiler -Wall -Xcompiler -Wextra
 
 GCC_OPTS=-O3 -Wall -Wextra
 
-solution: HW1.o main.o solution_func.o
+solution: compare HW1.o main.o solution_func.o
 	$(NVCC) -o hw1 main.o HW1.o solution_func.o -L $(OPENCV_LIBPATH) $(OPENCV_LIBS)
 
 HW1.o: HW1.cpp utils.h Makefile
@@ -24,4 +24,4 @@ compare: compare.cpp utils.h Makefile
 	g++ -o compare compare.cpp -I $(OPENCV_INCLUDEPATH) -L $(OPENCV_LIBPATH) $(OPENCV_LIBS) $(GCC_OPTS) -I $(CUDA_INCLUDEPATH)
 
 clean:
-	rm -f *.o hw1 compare my_output.png
+	rm -f *.o *.png hw1 compare

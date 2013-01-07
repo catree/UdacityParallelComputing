@@ -18,7 +18,7 @@ void preProcess(uchar4 **h_rgbaImage, unsigned char **h_greyImage,
                 const std::string& filename);
 
 //check the results and write out the final image
-void postProcess();
+void postProcess(const std::string& output_file);
 
 void your_rgba_to_greyscale(const uchar4 * const h_rgbaImage, uchar4 * const d_rgbaImage,
                             unsigned char* const d_greyImage, size_t numRows, size_t numCols);
@@ -27,19 +27,18 @@ int main(int argc, char **argv) {
   uchar4        *h_rgbaImage, *d_rgbaImage;
   unsigned char *h_greyImage, *d_greyImage;
 
-  std::string filename;
-  if (argc == 1) {
-    filename = std::string("cinque_terre_small.jpg");
-  }
-  else if (argc == 2) {
-    filename = std::string(argv[1]);
+  std::string input_file;
+  std::string output_file;
+  if (argc == 3) {
+    input_file  = std::string(argv[1]);
+    output_file = std::string(argv[2]);
   }
   else {
-    std::cerr << "Usage: ./hw# [optional input file]" << std::endl;
+    std::cerr << "Usage: ./hw# input_file output_file" << std::endl;
     exit(1);
   }
   //load the image and give us our input and output pointers
-  preProcess(&h_rgbaImage, &h_greyImage, &d_rgbaImage, &d_greyImage, filename);
+  preProcess(&h_rgbaImage, &h_greyImage, &d_rgbaImage, &d_greyImage, input_file);
 
   tick();
   //call the students' code
@@ -48,7 +47,7 @@ int main(int argc, char **argv) {
   std::cout << "Processing took: " << tick() << " msecs." << std::endl;
 
   //check results and output the grey image
-  postProcess();
+  postProcess(output_file);
 
   return 0;
 }
