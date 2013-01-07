@@ -1,5 +1,5 @@
-#include "reference_calc.cpp"
-#include "utils.h"
+#include "../student/reference_calc.cpp"
+#include "../student/utils.h"
 
 __global__
 void rgba_to_greyscale(const uchar4* const rgbaImage,
