@@ -74,7 +74,7 @@ void checkResultsAutodesk(const T* const ref, const T* const gpu, size_t numElem
       ++numBadPixels;
   }
 
-  if (numBadPixels >= tolerance) {
+  if (numBadPixels > tolerance) {
     std::cerr << "Too many bad pixels in the image." << numBadPixels << "/" << tolerance << std::endl;
     exit(1);
   }
