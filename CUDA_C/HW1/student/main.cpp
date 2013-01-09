@@ -38,12 +38,14 @@ int main(int argc, char **argv) {
   //load the image and give us our input and output pointers
   preProcess(&h_rgbaImage, &h_greyImage, &d_rgbaImage, &d_greyImage, input_file);
 
-  tick();
+  GpuTimer timer;
+  timer.Start();
   //call the students' code
   your_rgba_to_greyscale(h_rgbaImage, d_rgbaImage, d_greyImage, numRows(), numCols());
+  timer.Stop();
   checkCudaErrors(cudaDeviceSynchronize());
-  int err = printf("e57__TIMING__f82 Processing took: %f msecs.\n", tick());
-  
+  int err = printf("e57__TIMING__f82 Processing took: %f msecs.\n", timer.Elapsed());
+
   if (err < 0) {
     //Couldn't print! Probably the student closed stdout - bad news
     std::cerr << "Couldn't print timing information! STDOUT Closed!" << std::endl;
