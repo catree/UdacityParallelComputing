@@ -13,6 +13,11 @@ int main(int argc, char **argv) {
   cv::Mat gold = cv::imread(argv[1], -1);
   cv::Mat test = cv::imread(argv[2], -1);
 
+  if (!gold.isContinuous() || !test.isContinuous()) {
+    std::cerr << "Matrices aren't continuous!" << std::endl;
+    exit(1);
+  }
+
   if (gold.empty() || test.empty()) {
     std::cerr << "Inputs couldn't be read! " << argv[1] << " " << argv[2] << std::endl;
     exit(1);
@@ -29,6 +34,19 @@ int main(int argc, char **argv) {
     exit(1);
   }
 
+  cv::Mat diff = abs(gold - test);
+
+  cv::Mat diffSingleChannel = diff.reshape(1, 0); //convert to 1 channel, same # rows
+
+  double minVal, maxVal;
+
+  cv::minMaxLoc(diffSingleChannel, &minVal, &maxVal, NULL, NULL); //NULL because we don't care about location
+
+  //now perform transform so that we bump values to the full range
+
+  diffSingleChannel = (diffSingleChannel - minVal) * (255. / (maxVal - minVal));
+
+  cv::imwrite("differenceImage.png", diffSingleChannel);
   //OK, now we can start comparing values...
   unsigned char *goldPtr = gold.ptr<unsigned char>(0);
   unsigned char *testPtr = test.ptr<unsigned char>(0);
