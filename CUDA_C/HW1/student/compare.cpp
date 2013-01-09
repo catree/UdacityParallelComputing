@@ -24,7 +24,7 @@ int main(int argc, char **argv) {
   }
 
   if (gold.size() != test.size()) {
-    std::cerr << "Images have different sizes! [" << gold.rows << ", " << gold.cols << "] [" 
+    std::cerr << "Images have different sizes! [" << gold.rows << ", " << gold.cols << "] ["
               << test.rows << ", " << test.cols << "]" << std::endl;
     exit(1);
   }
@@ -34,10 +34,10 @@ int main(int argc, char **argv) {
   unsigned char *testPtr = test.ptr<unsigned char>(0);
 
   if (argc == 3)
-    checkResultsExact(goldPtr, testPtr, gold.rows * gold.cols);
+    checkResultsExact(goldPtr, testPtr, gold.rows * gold.cols * gold.channels());
   else {
     double epsilon = atof(argv[3]);
-    checkResultsEps(goldPtr, testPtr, gold.rows * gold.cols, epsilon, epsilon);
+    checkResultsEps(goldPtr, testPtr, gold.rows * gold.cols * gold.channels(), epsilon, epsilon);
   }
 
   std::cout << "PASS" << std::endl;

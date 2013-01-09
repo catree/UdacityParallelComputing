@@ -73,7 +73,9 @@ void your_rgba_to_greyscale(const uchar4 * const h_rgbaImage, uchar4 * const d_r
                              numRows * numCols * sizeof(unsigned char), 
                              cudaMemcpyDeviceToHost));
   referenceCalculation(h_rgbaImage, h_greyImageRef, numRows, numCols);
-  checkResultsExact(h_greyImageRef, h_greyImageGPU, numRows * numCols);
+
+  //the 4 is because there are 4 channels in the image
+  checkResultsExact(h_greyImageRef, h_greyImageGPU, numRows * numCols * 4); 
  
   delete [] h_greyImageGPU;
   delete [] h_greyImageRef;*/
