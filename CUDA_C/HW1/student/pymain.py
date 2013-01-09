@@ -1,13 +1,16 @@
 #Sample python file for running CUDA Assignments
 #Created 1/6/13 by Erich Elsen
 
-import StringIO
 import random
 import string
 import subprocess
 import json
 import base64
 import hashlib
+
+#Magic Image String delimiters
+image_start = 'BEGIN_IMAGE_f9825uweof8jw9fj4r8'
+image_end   = 'END_IMAGE_0238jfw08fjsiufhw8frs'
 
 #strip all timing strings from the output
 def stripTimingPrints(inputString):
@@ -27,7 +30,6 @@ def stripTimingPrints(inputString):
             return inputString, time
 
 def runCudaAssignment():
-    stdOutput = StringIO.StringIO()
     results = {'Makefile':'', 'progOutput':'', 'compareOutput': '', 'compareResult':False, 'time':''}
 
     #call make, capture stderr & stdout
@@ -40,7 +42,6 @@ def runCudaAssignment():
         print json.dumps(results)
         return
 
-    
     #generate a random output name so that students cannot copy the gold file
     #directly to the output file
     random_output_name = ''.join(random.choice(string.ascii_lowercase) for x in range(10)) + '.png'
@@ -68,7 +69,7 @@ def runCudaAssignment():
         results['compare'] = e
         print json.dumps(results)
         return
- 
+
     #Uncomment these lines once the SHA1 value of the compare executable is known
 
     #goldHashVal = '?' #TODO needs to be determined for server (ideally precompiled executable)
@@ -84,19 +85,31 @@ def runCudaAssignment():
         #images don't match
         #dump image anyway?
         results['compareOutput'] = e.output
+        try:
+            diffImage = open('differenceImage.png', 'rb').read()
+        except IOError:
+            print json.dumps(results)
+            return
+
+        data = {}
+        data['name'] = 'DifferenceImage'
+        data['format'] = 'png'
+        data['bytes'] = base64.encodestring(diffImage)
+
+        print image_start + json.dumps(data) + image_end
         print json.dumps(results)
-        return
+
 
     results['compareResult'] = True
 
     print json.dumps(results)
     #everything looks good, open image and return it with magic strings
-    imageFile = open(random_output_name, 'rb').read()
+    try:
+        imageFile = open(random_output_name, 'rb').read()
+    except IOError:
+        return
 
     #add magic string, JSONize and dump to stdout as well
-    image_start = 'BEGIN_IMAGE_f9825uweof8jw9fj4r8'
-    image_end   = 'END_IMAGE_0238jfw08fjsiufhw8frs'
-
     data = {}
     data['name'] = 'StudentImage'
     data['format'] = 'png'
