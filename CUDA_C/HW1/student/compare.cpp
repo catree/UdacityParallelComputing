@@ -46,7 +46,9 @@ int main(int argc, char **argv) {
 
   diffSingleChannel = (diffSingleChannel - minVal) * (255. / (maxVal - minVal));
 
-  cv::imwrite("differenceImage.png", diffSingleChannel);
+  diff = diffSingleChannel.reshape(gold.channels(), 0);
+
+  cv::imwrite("differenceImage.png", diff);
   //OK, now we can start comparing values...
   unsigned char *goldPtr = gold.ptr<unsigned char>(0);
   unsigned char *testPtr = test.ptr<unsigned char>(0);
