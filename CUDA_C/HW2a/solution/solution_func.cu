@@ -104,6 +104,179 @@ void gaussian_blur(const unsigned char* const inputChannel,
   outputChannel[thread_1D_pos] = static_cast<unsigned char>(result);
 }
 
+
+/* The following is copied directly from Mike's IPython notebook eke */
+
+#define BLOCK_SIZE_Y           8
+#define BLOCK_SIZE_X           32
+#define BLUR_KERNEL_HALF_WIDTH 4
+#define SHARED_MEMORY_SIZE_Y   BLOCK_SIZE_Y + ( 2 * BLUR_KERNEL_HALF_WIDTH )
+#define SHARED_MEMORY_SIZE_X   BLOCK_SIZE_X + ( 2 * BLUR_KERNEL_HALF_WIDTH ) + 1
+#define SHARED_MEMORY_OFFSET_Y BLUR_KERNEL_HALF_WIDTH
+#define SHARED_MEMORY_OFFSET_X BLUR_KERNEL_HALF_WIDTH
+
+__global__ void shared_memory_blur(
+    unsigned char* d_blurred,
+    unsigned char* d_original,
+    float*         d_blur_kernel,
+    int            num_pixels_y,
+    int            num_pixels_x,
+    int            blur_kernel_half_width,
+    int            blur_kernel_width )
+{
+  __shared__ unsigned char s_original[ SHARED_MEMORY_SIZE_Y ][ SHARED_MEMORY_SIZE_X ];
+
+  int  ny                            = num_pixels_y;
+  int  nx                            = num_pixels_x;
+  int2 image_index_2d_global         = make_int2( ( blockIdx.x * blockDim.x ) + threadIdx.x, ( blockIdx.y * blockDim.y ) + threadIdx.y );
+  int2 image_index_2d_global_clamped = make_int2( min( nx - 1, max( 0, image_index_2d_global.x ) ), min( ny - 1, max( 0, image_index_2d_global.y ) ) );
+  int  image_index_1d_global_clamped = ( nx * image_index_2d_global_clamped.y ) + image_index_2d_global_clamped.x;
+  int2 image_index_2d_shared_memory  = make_int2( threadIdx.x + SHARED_MEMORY_OFFSET_X, threadIdx.y + SHARED_MEMORY_OFFSET_Y );
+
+  //
+  // load center of shared memory
+  //
+  s_original[ image_index_2d_shared_memory.y ][ image_index_2d_shared_memory.x ] = d_original[ image_index_1d_global_clamped ];
+
+  //
+  // load y+1 halo into shared memory
+  //
+  if ( threadIdx.y < BLUR_KERNEL_HALF_WIDTH )
+  {
+    int2 image_halo_index_2d_global         = make_int2( ( blockIdx.x * blockDim.x ) + threadIdx.x, ( ( blockIdx.y + 1 ) * blockDim.y ) + threadIdx.y );
+    int2 image_halo_index_2d_global_clamped = make_int2( min( nx - 1, max( 0, image_halo_index_2d_global.x ) ), min( ny - 1, max( 0, image_halo_index_2d_global.y ) ) );
+    int  image_halo_index_1d_global_clamped = ( nx * image_halo_index_2d_global_clamped.y ) + image_halo_index_2d_global_clamped.x;
+    int2 image_halo_index_2d_shared_memory  = make_int2( threadIdx.x + SHARED_MEMORY_OFFSET_X, threadIdx.y + SHARED_MEMORY_OFFSET_Y + BLOCK_SIZE_Y );
+
+    s_original[ image_halo_index_2d_shared_memory.y ][ image_halo_index_2d_shared_memory.x ] = d_original[ image_halo_index_1d_global_clamped ];
+  }
+
+  //
+  // load y-1 halo into shared memory
+  //
+  if ( threadIdx.y >= BLOCK_SIZE_Y - BLUR_KERNEL_HALF_WIDTH )
+  {
+    int2 image_halo_index_2d_global         = make_int2( ( blockIdx.x * blockDim.x ) + threadIdx.x, ( ( blockIdx.y - 1 ) * blockDim.y ) + threadIdx.y );
+    int2 image_halo_index_2d_global_clamped = make_int2( min( nx - 1, max( 0, image_halo_index_2d_global.x ) ), min( ny - 1, max( 0, image_halo_index_2d_global.y ) ) );
+    int  image_halo_index_1d_global_clamped = ( nx * image_halo_index_2d_global_clamped.y ) + image_halo_index_2d_global_clamped.x;
+    int2 image_halo_index_2d_shared_memory  = make_int2( threadIdx.x + SHARED_MEMORY_OFFSET_X, threadIdx.y + SHARED_MEMORY_OFFSET_Y - BLOCK_SIZE_Y );
+
+    s_original[ image_halo_index_2d_shared_memory.y ][ image_halo_index_2d_shared_memory.x ] = d_original[ image_halo_index_1d_global_clamped ];
+  }
+
+  //
+  // load x+1 halo into shared memory
+  //
+  if ( threadIdx.x < BLUR_KERNEL_HALF_WIDTH )
+  {
+    int2 image_halo_index_2d_global         = make_int2( ( ( blockIdx.x + 1 ) * blockDim.x ) + threadIdx.x, ( blockIdx.y * blockDim.y ) + threadIdx.y );
+    int2 image_halo_index_2d_global_clamped = make_int2( min( nx - 1, max( 0, image_halo_index_2d_global.x ) ), min( ny - 1, max( 0, image_halo_index_2d_global.y ) ) );
+    int  image_halo_index_1d_global_clamped = ( nx * image_halo_index_2d_global_clamped.y ) + image_halo_index_2d_global_clamped.x;
+    int2 image_halo_index_2d_shared_memory  = make_int2( threadIdx.x + SHARED_MEMORY_OFFSET_X + BLOCK_SIZE_X, threadIdx.y + SHARED_MEMORY_OFFSET_Y );
+
+    s_original[ image_halo_index_2d_shared_memory.y ][ image_halo_index_2d_shared_memory.x ] = d_original[ image_halo_index_1d_global_clamped ];
+  }
+
+  //
+  // load x-1 halo into shared memory
+  //
+  if ( threadIdx.x >= BLOCK_SIZE_X - BLUR_KERNEL_HALF_WIDTH )
+  {
+    int2 image_halo_index_2d_global         = make_int2( ( ( blockIdx.x - 1 ) * blockDim.x ) + threadIdx.x, ( blockIdx.y * blockDim.y ) + threadIdx.y );
+    int2 image_halo_index_2d_global_clamped = make_int2( min( nx - 1, max( 0, image_halo_index_2d_global.x ) ), min( ny - 1, max( 0, image_halo_index_2d_global.y ) ) );
+    int  image_halo_index_1d_global_clamped = ( nx * image_halo_index_2d_global_clamped.y ) + image_halo_index_2d_global_clamped.x;
+    int2 image_halo_index_2d_shared_memory = make_int2( threadIdx.x + SHARED_MEMORY_OFFSET_X - BLOCK_SIZE_X, threadIdx.y + SHARED_MEMORY_OFFSET_Y );
+
+    s_original[ image_halo_index_2d_shared_memory.y ][ image_halo_index_2d_shared_memory.x ] = d_original[ image_halo_index_1d_global_clamped ];
+  }
+
+  //
+  // load x+1,y+1 halo into shared memory
+  //
+  if ( threadIdx.x < BLUR_KERNEL_HALF_WIDTH && threadIdx.y < BLUR_KERNEL_HALF_WIDTH )
+  {
+    int2 image_halo_index_2d_global         = make_int2( ( ( blockIdx.x + 1 ) * blockDim.x ) + threadIdx.x, ( ( blockIdx.y + 1 ) * blockDim.y ) + threadIdx.y );
+    int2 image_halo_index_2d_global_clamped = make_int2( min( nx - 1, max( 0, image_halo_index_2d_global.x ) ), min( ny - 1, max( 0, image_halo_index_2d_global.y ) ) );
+    int  image_halo_index_1d_global_clamped = ( nx * image_halo_index_2d_global_clamped.y ) + image_halo_index_2d_global_clamped.x;
+    int2 image_halo_index_2d_shared_memory  = make_int2( threadIdx.x + SHARED_MEMORY_OFFSET_X + BLOCK_SIZE_X, threadIdx.y + SHARED_MEMORY_OFFSET_Y + BLOCK_SIZE_Y );
+
+    s_original[ image_halo_index_2d_shared_memory.y ][ image_halo_index_2d_shared_memory.x ] = d_original[ image_halo_index_1d_global_clamped ];
+  }
+
+  //
+  // load x+1,y-1 halo into shared memory
+  //
+  if ( threadIdx.x < BLUR_KERNEL_HALF_WIDTH && threadIdx.y >= BLOCK_SIZE_Y - BLUR_KERNEL_HALF_WIDTH )
+  {
+    int2 image_halo_index_2d_global         = make_int2( ( ( blockIdx.x + 1 ) * blockDim.x ) + threadIdx.x, ( ( blockIdx.y - 1 ) * blockDim.y ) + threadIdx.y );
+    int2 image_halo_index_2d_global_clamped = make_int2( min( nx - 1, max( 0, image_halo_index_2d_global.x ) ), min( ny - 1, max( 0, image_halo_index_2d_global.y ) ) );
+    int  image_halo_index_1d_global_clamped = ( nx * image_halo_index_2d_global_clamped.y ) + image_halo_index_2d_global_clamped.x;
+    int2 image_halo_index_2d_shared_memory  = make_int2( threadIdx.x + SHARED_MEMORY_OFFSET_X + BLOCK_SIZE_X, threadIdx.y + SHARED_MEMORY_OFFSET_Y - BLOCK_SIZE_Y );
+
+    s_original[ image_halo_index_2d_shared_memory.y ][ image_halo_index_2d_shared_memory.x ] = d_original[ image_halo_index_1d_global_clamped ];
+  }
+
+  //
+  // load x-1,y+1 halo into shared memory
+  //
+  if ( threadIdx.x >= BLOCK_SIZE_X - BLUR_KERNEL_HALF_WIDTH && threadIdx.y < BLUR_KERNEL_HALF_WIDTH )
+  {
+    int2 image_halo_index_2d_global         = make_int2( ( ( blockIdx.x - 1 ) * blockDim.x ) + threadIdx.x, ( ( blockIdx.y + 1 ) * blockDim.y ) + threadIdx.y );
+    int2 image_halo_index_2d_global_clamped = make_int2( min( nx - 1, max( 0, image_halo_index_2d_global.x ) ), min( ny - 1, max( 0, image_halo_index_2d_global.y ) ) );
+    int  image_halo_index_1d_global_clamped = ( nx * image_halo_index_2d_global_clamped.y ) + image_halo_index_2d_global_clamped.x;
+    int2 image_halo_index_2d_shared_memory  = make_int2( threadIdx.x + SHARED_MEMORY_OFFSET_X - BLOCK_SIZE_X, threadIdx.y + SHARED_MEMORY_OFFSET_Y + BLOCK_SIZE_Y );
+
+    s_original[ image_halo_index_2d_shared_memory.y ][ image_halo_index_2d_shared_memory.x ] = d_original[ image_halo_index_1d_global_clamped ];
+  }
+
+  //
+  // load x-1,y-1 halo into shared memory
+  //
+  if ( threadIdx.x >= BLOCK_SIZE_X - BLUR_KERNEL_HALF_WIDTH && threadIdx.y >= BLOCK_SIZE_Y - BLUR_KERNEL_HALF_WIDTH )
+  {
+    int2 image_halo_index_2d_global         = make_int2( ( ( blockIdx.x - 1 ) * blockDim.x ) + threadIdx.x, ( ( blockIdx.y - 1 ) * blockDim.y ) + threadIdx.y );
+    int2 image_halo_index_2d_global_clamped = make_int2( min( nx - 1, max( 0, image_halo_index_2d_global.x ) ), min( ny - 1, max( 0, image_halo_index_2d_global.y ) ) );
+    int  image_halo_index_1d_global_clamped = ( nx * image_halo_index_2d_global_clamped.y ) + image_halo_index_2d_global_clamped.x;
+    int2 image_halo_index_2d_shared_memory  = make_int2( threadIdx.x + SHARED_MEMORY_OFFSET_X - BLOCK_SIZE_X, threadIdx.y + SHARED_MEMORY_OFFSET_Y - BLOCK_SIZE_Y );
+
+    s_original[ image_halo_index_2d_shared_memory.y ][ image_halo_index_2d_shared_memory.x ] = d_original[ image_halo_index_1d_global_clamped ];
+  }
+
+  //
+  // wait until all threads in the thread block are finished loading the image chunk into shared memory
+  //
+  __syncthreads();
+
+  //
+  // perform blur operation by reading image from shared memory
+  //
+  if ( image_index_2d_global.x < nx && image_index_2d_global.y < ny )
+  {
+    float result = 0;
+
+    for ( int y = -blur_kernel_half_width; y <= blur_kernel_half_width; y++ )
+    {
+      for ( int x = -blur_kernel_half_width; x <= blur_kernel_half_width; x++ )
+      {
+        int2          image_offset_index_2d = make_int2( image_index_2d_shared_memory.x + x, image_index_2d_shared_memory.y + y );
+
+        unsigned char image_offset_value    = s_original[ image_offset_index_2d.y ][ image_offset_index_2d.x ];
+
+        int2          blur_kernel_index_2d  = make_int2( x + blur_kernel_half_width, y + blur_kernel_half_width );
+        int           blur_kernel_index_1d  = ( blur_kernel_width * blur_kernel_index_2d.y ) + blur_kernel_index_2d.x;
+
+        float         blur_kernel_value     = d_blur_kernel[ blur_kernel_index_1d ];
+
+        result += blur_kernel_value * image_offset_value;
+      }
+    }
+
+    d_blurred[ image_index_1d_global_clamped ] = (unsigned char)result;
+  }
+}
+
+
+
 void your_gaussian_blur(const uchar4 * const h_inputImageRGBA, uchar4 * const d_inputImageRGBA,
                         uchar4* const d_outputImageRGBA, const size_t numRows, const size_t numCols,
                         const float* const h_filter, const int filterWidth)
@@ -131,7 +304,7 @@ void your_gaussian_blur(const uchar4 * const h_inputImageRGBA, uchar4 * const d_
   //written this way to emphasize that the x dimension of the block should be a
   //multiple of the warpSize for coalescing purposes
   const int warpSize = 32;
-  const dim3 blockSize(warpSize, 16, 1);
+  const dim3 blockSize(warpSize, 8, 1);
   const dim3 gridSize( (numCols + blockSize.x - 1) / blockSize.x, 
                        (numRows + blockSize.y - 1) / blockSize.y, 1);
 
@@ -146,6 +319,12 @@ void your_gaussian_blur(const uchar4 * const h_inputImageRGBA, uchar4 * const d_
                                          d_filter, filterWidth);
   gaussian_blur<<<gridSize, blockSize>>>(d_blue, d_blueBlurred, numRows, numCols,
                                          d_filter, filterWidth);
+
+  //Uncomment the lines below for a version that uses shared memory version
+
+  /*shared_memory_blur<<<gridSize, blockSize>>>(d_redBlurred, d_red, d_filter, numRows, numCols, filterWidth/2, filterWidth);
+  shared_memory_blur<<<gridSize, blockSize>>>(d_greenBlurred, d_green, d_filter, numRows, numCols, filterWidth/2, filterWidth);
+  shared_memory_blur<<<gridSize, blockSize>>>(d_blueBlurred, d_blue, d_filter, numRows, numCols, filterWidth/2, filterWidth);*/
   checkCudaErrors(cudaDeviceSynchronize());
 
   //last phase recombines
