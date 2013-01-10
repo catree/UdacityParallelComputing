@@ -25,7 +25,7 @@ GCC_OPTS=-O3 -Wall -Wextra
 student: compare main.o student_func.o
 	$(NVCC) -o hw main.o student_func.o -L $(OPENCV_LIBPATH) $(OPENCV_LIBS)
 
-main.o: main.cpp timer.h utils.h Makefile
+main.o: main.cpp timer.h utils.h HW1.cpp Makefile
 	g++ -c main.cpp $(GCC_OPTS) -I $(CUDA_INCLUDEPATH)
 
 student_func.o: student_func.cu reference_calc.cpp utils.h
