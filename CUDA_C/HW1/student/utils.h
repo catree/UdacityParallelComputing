@@ -13,6 +13,7 @@
 
 template<typename T>
 void check(T func, const char* const file, const int line) {
+  cudaDeviceSynchronize();
   cudaError_t err = cudaGetLastError();
   if (err != cudaSuccess) {
     std::cerr << "CUDA error at: " << file << ":" << line << std::endl;
