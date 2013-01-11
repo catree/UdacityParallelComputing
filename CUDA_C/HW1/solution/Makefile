@@ -16,10 +16,10 @@ NVCC_OPTS=-O3 -arch=sm_20 -Xcompiler -Wall -Xcompiler -Wextra
 
 GCC_OPTS=-O3 -Wall -Wextra
 
-solution: compare main.o solution_func.o
+solution: compare main.o solution_func.o Makefile
 	$(NVCC) -o hw main.o solution_func.o -L $(OPENCV_LIBPATH) $(OPENCV_LIBS)
 
-main.o: ../student/main.cpp ../student/timer.h ../student/utils.h ../student/HW1.cpp Makefile
+main.o: ../student/main.cpp ../student/timer.h ../student/utils.h ../student/HW1.cpp
 	g++ -c ../student/main.cpp $(GCC_OPTS) -I $(CUDA_INCLUDEPATH)
 
 solution_func.o: solution_func.cu ../student/reference_calc.cpp ../student/utils.h
