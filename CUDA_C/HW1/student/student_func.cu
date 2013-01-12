@@ -51,7 +51,8 @@ void your_rgba_to_greyscale(const uchar4 * const h_rgbaImage, uchar4 * const d_r
   const dim3 blockSize(1, 1, 1);  //TODO
   const dim3 gridSize( 1, 1, 1);  //TODO
   rgba_to_greyscale<<<gridSize, blockSize>>>(d_rgbaImage, d_greyImage, numRows, numCols);
-  checkCudaErrors(cudaDeviceSynchronize());
+  
+  cudaDeviceSynchronize(); checkCudaErrors(cudaGetLastError());
 
   /****************************************************************************
   * You can use the code below to help with debugging, but make sure to       *

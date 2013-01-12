@@ -12,9 +12,9 @@ OPENCV_INCLUDEPATH=/usr/include
 OPENCV_LIBS=-lopencv_core -lopencv_imgproc -lopencv_highgui
 CUDA_INCLUDEPATH=/usr/local/cuda-5.0/include
 
-NVCC_OPTS=-O3 -arch=sm_20 -Xcompiler -Wno-unused -Xcompiler -Wno-uninitialized -w
+NVCC_OPTS=-O3 -arch=sm_20 -Xcompiler -Wall -Xcompiler -Wextra
 
-GCC_OPTS=-O3 -Wno-unused -Wno-uninitialized
+GCC_OPTS=-O3 -Wall -Wextra
 
 solution: compare main.o solution_func.o Makefile
 	$(NVCC) -o hw main.o solution_func.o -L $(OPENCV_LIBPATH) $(OPENCV_LIBS)

@@ -66,6 +66,8 @@ void your_rgba_to_greyscale(const uchar4 * const h_rgbaImage, uchar4 * const d_r
                        (numRows + blockSize.y - 1) / blockSize.y, 1);
   rgba_to_greyscale<<<gridSize, blockSize>>>(d_rgbaImage, d_greyImage, numRows, numCols);
   
+  cudaDeviceSynchronize(); checkCudaErrors(cudaGetLastError());
+  
   
   //This faster process 2 pixels at a time, in case of an add number of pixels it runs
   //an additional kernel that processes one pixel (faster than an if statement inside

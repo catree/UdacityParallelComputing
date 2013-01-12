@@ -43,7 +43,8 @@ int main(int argc, char **argv) {
   //call the students' code
   your_rgba_to_greyscale(h_rgbaImage, d_rgbaImage, d_greyImage, numRows(), numCols());
   timer.Stop();
-  checkCudaErrors(cudaDeviceSynchronize());
+  cudaDeviceSynchronize(); checkCudaErrors(cudaGetLastError());
+
   int err = printf("e57__TIMING__f82 Processing took: %f msecs.\n", timer.Elapsed());
 
   if (err < 0) {
