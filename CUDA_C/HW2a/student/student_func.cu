@@ -166,18 +166,19 @@ void your_gaussian_blur(const uchar4 * const h_inputImageRGBA, uchar4 * const d_
   //first kernel to split RGBA into separate channels
   //We take care of launching this one for you
   separateChannels<<<gridSize, blockSize>>>(d_inputImageRGBA, numRows, numCols, d_red, d_green, d_blue);
-  checkCudaErrors(cudaDeviceSynchronize());
+
+  cudaDeviceSynchronize(); checkCudaErrors(cudaGetLastError());
 
   //second phase does 3 convolutions, one on each color channel
   //TODO: Call your convolution kernel here 3 times, once for each
   //color channel.
-  checkCudaErrors(cudaDeviceSynchronize());
+  cudaDeviceSynchronize(); checkCudaErrors(cudaGetLastError());
 
   //last phase recombines
   //We also take care of launching this one as well
   recombineChannels<<<gridSize, blockSize>>>(d_redBlurred, d_greenBlurred, d_blueBlurred,
                                              d_outputImageRGBA, numRows, numCols);
-  checkCudaErrors(cudaDeviceSynchronize());
+  cudaDeviceSynchronize(); checkCudaErrors(cudaGetLastError());
 
   /****************************************************************************
   * You can use the code below to help with debugging, but make sure to       *

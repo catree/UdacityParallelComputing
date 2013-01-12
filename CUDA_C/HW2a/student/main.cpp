@@ -48,7 +48,7 @@ int main(int argc, char **argv) {
   //call the students' code
   your_gaussian_blur(h_inputImageRGBA, d_inputImageRGBA, d_outputImageRGBA, numRows(), numCols(), h_filter, filterWidth);
   timer.Stop();
-  checkCudaErrors(cudaDeviceSynchronize());
+  cudaDeviceSynchronize(); checkCudaErrors(cudaGetLastError());
   int err = printf("e57__TIMING__f82 Processing took: %f msecs.\n", timer.Elapsed());
 
   if (err < 0) {
