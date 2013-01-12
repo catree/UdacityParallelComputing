@@ -64,7 +64,7 @@ void your_histogram_and_prefixsum(const float* const d_luminance,
   compute_histogram<<< (numRows * numCols + numThreads - 1) / numThreads, numThreads>>>(
       d_histo, d_luminance, min_logLum, max_logLum, range, numBins, numRows * numCols);
   
-  checkCudaErrors(cudaDeviceSynchronize());
+  cudaDeviceSynchronize(); checkCudaErrors(cudaGetLastError());
 
 
   thrust::device_ptr<unsigned int> histo(d_histo);

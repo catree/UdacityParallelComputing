@@ -44,12 +44,14 @@ int main(int argc, char **argv) {
 
   GpuTimer timer;
   float min_logLum, max_logLum;
+  min_logLum = 0.f;
+  max_logLum = 1.f;
   timer.Start();
   //call the students' code
   your_histogram_and_prefixsum(d_luminance, d_cdf, min_logLum, max_logLum,
                                numRows, numCols, numBins);
   timer.Stop();
-  checkCudaErrors(cudaDeviceSynchronize());
+  cudaDeviceSynchronize(); checkCudaErrors(cudaGetLastError());
   int err = printf("e57__TIMING__f82 Processing took: %f msecs.\n", timer.Elapsed());
 
   if (err < 0) {
