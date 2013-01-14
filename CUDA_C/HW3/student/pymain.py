@@ -12,20 +12,21 @@ import hashlib
 image_start = 'BEGIN_IMAGE_f9825uweof8jw9fj4r8'
 image_end   = 'END_IMAGE_0238jfw08fjsiufhw8frs'
 
+timingStringIdentifier = 'e57__TIMING__f82'
+meanStringIdentifier   = 'e57_MEAN__f82'
 #strip all timing strings from the output
-def stripTimingPrints(inputString):
-    timingStringIdentifier = 'e57__TIMING__f82'
-    pos = inputString.find(timingStringIdentifier)
+def stripPrints(inputString, identifier):
+    pos = inputString.find(identifier)
     if pos == -1:
         return inputString, ''
     else:
         for line in inputString.split('\n'):
-            if line.startswith(timingStringIdentifier):
+            if line.startswith(identifier):
                 time = line.split()[3]
-        inputString = inputString[0:pos] + inputString[pos + len(timingStringIdentifier):]
-        if timingStringIdentifier in inputString:
+        inputString = inputString[0:pos] + inputString[pos + len(identifier):]
+        if identifier in inputString:
             #more than one!! bad news...probably cheating attempt
-            return 'There is no reason to output the string ' + timingStringIdentifier + ' in your code\nCheating Suspected - Automatic Fail', ''
+            return 'There is no reason to output the string ' + identifier + ' in your code\nCheating Suspected - Automatic Fail', ''
         else:
             return inputString, time
 
@@ -51,12 +52,12 @@ def runCudaAssignment():
         progOutput = subprocess.check_output(['./hw', 'cinque_terre_small.jpg', random_output_name], stderr = subprocess.STDOUT)
     except subprocess.CalledProcessError, e:
         #program failed, dump possible Make warnings, program output and quit
-        progOutput, time = stripTimingPrints(e.output)
+        progOutput, time = stripPrints(e.output, timingStringIdentifier)
         results['progOutput'] = progOutput
         print json.dumps(results)
         return
 
-    progOutput, time = stripTimingPrints(progOutput)
+    progOutput, time = stripPrints(progOutput, timingStringIdentifier)
     results['progOutput'] = progOutput
     results['time'] =       time
 
