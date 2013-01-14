@@ -60,6 +60,11 @@ def runCudaAssignment():
     results['progOutput'] = progOutput
     results['time'] =       time
 
+    #check if stripping the timing print failed
+    if time == '':
+        print json.dumps(results)
+        return
+
     #run compare to see if the output is correct
     #get md5 hash of compare executable and check with known result to avoid tampering...
     try:
