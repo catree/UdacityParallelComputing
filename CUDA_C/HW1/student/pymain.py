@@ -52,7 +52,7 @@ def runCudaAssignment():
     except subprocess.CalledProcessError, e:
         #program failed, dump possible Make warnings, program output and quit
         progOutput, time = stripTimingPrints(e.output)
-        results['progOutput'] = e.output
+        results['progOutput'] = progOutput
         print json.dumps(results)
         return
 
