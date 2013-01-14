@@ -2,8 +2,8 @@
 
 void reference_calculation(const unsigned int* const vals,
                            unsigned int* const histo,
-                           const size_t numElems,
-                           const size_t numBins)
+                           const size_t numBins,
+                           const size_t numElems)
 
 {
   //zero out bins

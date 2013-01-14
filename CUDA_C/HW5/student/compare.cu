@@ -1,13 +1,16 @@
 #include <fstream>
 #include <cassert>
+
 #include "reference.cpp"
+#include "utils.h"
+
 #include <thrust/random/linear_congruential_engine.h>
 #include <thrust/random/normal_distribution.h>
 #include <thrust/random/uniform_int_distribution.h>
 
-const int numBins = 1024;
-const int numElems = 10000 * numBins;
-const float stddev = 10.f;
+const unsigned int numBins = 1024;
+const unsigned int numElems = 10000 * numBins;
+const float stddev = 100.f;
 
 int main(int argc, char **argv)
 {
@@ -27,7 +30,7 @@ int main(int argc, char **argv)
   size_t bytes = ifs.tellg();
   ifs.seekg(0);
 
-  int numBinsInFile = bytes / sizeof(unsigned int);
+  unsigned int numBinsInFile = bytes / sizeof(unsigned int);
 
   assert(numBinsInFile == numBins);
 
@@ -45,20 +48,22 @@ int main(int argc, char **argv)
   unsigned int *vals = new unsigned int[numElems];
   unsigned int *histo = new unsigned int[numBins];
 
-  for (int i = 0; i < numElems; ++i) {
+  for (size_t i = 0; i < numElems; ++i) {
     vals[i] = min(max((int)normalDist(rng), 0), numBins - 1);
   }
 
   //generate reference for the given mean
-  reference_calculation(vals, histo, numElems, numBins);
+  reference_calculation(vals, histo, numBins, numElems);
 
   //Now do the comparison
-  for (size_t i = 0; i < numBins; ++i) {
+  /*for (size_t i = 0; i < numBins; ++i) {
     if (histo[i] != student_histo[i]) {
       std::cerr << "Difference at " << i << " " << histo[i] << " " << student_histo[i] << std::endl;
       exit(1);
     }
-  }
+  }*/
+
+  checkResultsExact(histo, student_histo, numBins);
 
   delete[] vals;
   delete[] histo;

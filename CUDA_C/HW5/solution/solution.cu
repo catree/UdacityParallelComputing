@@ -1,4 +1,8 @@
-#include "utils.h"
+#include "../student/utils.h"
+
+#include <thrust/sort.h>
+#include <thrust/binary_search.h>
+#include <thrust/adjacent_difference.h>
   
 __global__
 void simpleHisto(const unsigned int* const vals,
@@ -54,7 +58,7 @@ void fasterHisto1(const unsigned int* const vals,
   }
 }
 
-void computeHistogram(const unsigned int* d_vals,
+void computeHistogram(const unsigned int* const d_vals,
                       unsigned int* const d_histo,
                       const unsigned int numBins,
                       const unsigned int numElems)
@@ -67,8 +71,33 @@ void computeHistogram(const unsigned int* d_vals,
   int side = ceil(sqrt(numElems / (double)numThreads));
   dim3 gridSize(side, side, 1);
   //call kernel
-  //simpleHisto<<< gridSize, numThreads>>>(d_vals, d_histo, numElems);
-  fasterHisto1<numBlocks, numThreads><<<numBlocks, numThreads, numBins * sizeof(unsigned int)>>>(d_vals, d_histo, numElems, numBins);
+  /////////////////////////////////////////////
+  //Solution 1, basic global atomic increment
+  simpleHisto<<< gridSize, numThreads>>>(d_vals, d_histo, numElems);
 
-  checkCudaErrors(cudaDeviceSynchronize());
+  ///////////////////////////////////////////////////////////
+  //Solution 2, using shared mem atomics
+  //fasterHisto1<numBlocks, numThreads><<<numBlocks, numThreads, numBins * sizeof(unsigned int)>>>(d_vals, d_histo, numElems, numBins);
+
+  ////////////////////////////////////////////////////////////
+  //Solution 3, with thrust and sorting
+  //Theoretically doing a full sort for a histogram is overkill
+  /*thrust::device_ptr<unsigned int> dv((unsigned int *)d_vals);
+
+  thrust::sort(dv, dv + numElems);
+
+  thrust::upper_bound(dv, dv + numElems,
+                      thrust::make_counting_iterator((unsigned int)0), thrust::make_counting_iterator(numBins),
+                      thrust::device_ptr<unsigned int>(d_histo));
+
+  thrust::adjacent_difference(thrust::device_ptr<unsigned int>(d_histo), thrust::device_ptr<unsigned int>(d_histo) + numBins,
+                              thrust::device_ptr<unsigned int>(d_histo)); */
+
+  /////////////////////////////////////////////////////////////
+  //Solution 4
+  //Use a 1/100 sampling to determine mean, then use registers
+  //for accumulation of values around mean to reduce contention
+  //To be implemented
+
+  cudaDeviceSynchronize(); checkCudaErrors(cudaGetLastError());
 }
