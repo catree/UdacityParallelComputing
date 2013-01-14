@@ -56,13 +56,6 @@ int main(int argc, char **argv)
   reference_calculation(vals, histo, numBins, numElems);
 
   //Now do the comparison
-  /*for (size_t i = 0; i < numBins; ++i) {
-    if (histo[i] != student_histo[i]) {
-      std::cerr << "Difference at " << i << " " << histo[i] << " " << student_histo[i] << std::endl;
-      exit(1);
-    }
-  }*/
-
   checkResultsExact(histo, student_histo, numBins);
 
   delete[] vals;
