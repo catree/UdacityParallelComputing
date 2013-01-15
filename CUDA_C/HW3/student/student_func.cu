@@ -10,16 +10,33 @@
 
   To store this extra information we use single precision floating point
   for each channel.  This allows for an extremely wide range of intensity values.
-  Unfortunately, this range cannot be displayed by monitors which are generally
-  limited to the RGB space we have been using.  To display a HDR image its
-  very wide range of values must be compressed.  That is the goal of this assignment.
+
+  In the image for this assignment, the inside of church with light coming in through
+  stained glass windows, the raw input floating point values for the
+  channels range from 0 to 275.  But the mean is .41 and 98% of the values are less than 3!  This
+  means that certain areas (the windows) are extremely bright compared to everywhere else.
+  If we linearly map this [0-275] range into the [0-255] range that we have been using
+  then most values will be mapped to zero! 
+  The only thing we will be able to see are the very brightest areas - the
+  windows - everything else will appear pitch black.
+
+  The problem is that although we have cameras capable of recording the wide range
+  of intensity that exists in the real world our monitors are not capable of displaying them.
+  Our eyes are also quite capable of observing a much wider range of intensities than
+  our image formats / monitors are capable of displaying.
+
+  Tone-mapping is a process that transforms the intensities in the image so that the
+  brightest values aren't nearly so far away from the mean.  That way when we transform
+  the values into [0-255] we can actually see the entire image.  There are many ways
+  to perform this process and it is as much an art as a science - there is no single
+  "right" answer.  In this homework we will implement one possible technique.
 
   Background Chrominance-Luminance
   ================================
 
   The RGB space that we have been using to represent images can be thought of
-  as one possible set of orthogonal axes in a three dimensional space of color.
-  We sometimes choose other orthogonal axes to represent this space because
+  as one possible set of axes spanning a three dimensional space of color.
+  We sometimes choose other axes to represent this space because
   they make certain operations more convenient.
 
   Another possible set of axes is known as Chrominance-Luminance or xyY.
@@ -37,8 +54,9 @@
 
   In this assignment we are going to transform the luminance channel
   (actually the log of the luminance, but this is unimportant for the parts of the
-   algorithm that you will be implementing) by compressing its range to 0, 1].
+   algorithm that you will be implementing) by compressing its range to [0, 1].
   To do this we need the cumulative distribution of the luminance values.
+
   Example
   -------
 
