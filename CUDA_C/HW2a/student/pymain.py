@@ -24,7 +24,7 @@ def stripPrints(inputString, identifier):
         newOutputString = ''
         for line in inputString.split('\n'):
             if line.startswith(identifier):
-                val = line.split()[3]
+                val = line.split()[1]
             elif not line == '':
                 newOutputString += line + '\n'
         if identifier in newOutputString:
