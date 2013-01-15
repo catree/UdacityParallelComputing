@@ -12,22 +12,25 @@ image_start = 'BEGIN_IMAGE_f9825uweof8jw9fj4r8'
 image_end   = 'END_IMAGE_0238jfw08fjsiufhw8frs'
 
 timingStringIdentifier = 'e57__TIMING__f82'
-meanStringIdentifier   = 'e57_MEAN__f82'
+meanStringIdentifier   = 'e57__MEAN__f82'
 #strip all timing strings from the output
 def stripPrints(inputString, identifier):
     pos = inputString.find(identifier)
     if pos == -1:
         return inputString, ''
     else:
+        val = ''
+        newOutputString = ''
         for line in inputString.split('\n'):
             if line.startswith(identifier):
-                time = line.split()[3]
-        inputString = inputString[0:pos] + inputString[pos + len(identifier):]
-        if identifier in inputString:
+                val = line.split()[1]
+            elif not line == '':
+                newOutputString += line + '\n'
+        if identifier in newOutputString:
             #more than one!! bad news...probably cheating attempt
             return 'There is no reason to output the string ' + identifier + ' in your code\nCheating Suspected - Automatic Fail', ''
         else:
-            return inputString, time
+            return newOutputString, val
 
 def runCudaAssignment():
     results = {'Makefile':'', 'progOutput':'', 'compareOutput': '', 'compareResult':False, 'time':''}
