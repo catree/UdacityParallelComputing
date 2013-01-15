@@ -1,5 +1,6 @@
 #include <cstdlib>
 #include <iostream>
+#include <cstdio>
 #include <fstream>
 #include "utils.h"
 #include "timer.h"
@@ -39,12 +40,10 @@ int main(int argc, char **argv) {
   unsigned int mean = rand() % 100 + 462;
 
   //Output mean so that grading can happen with the same inputs
-  std::cout << "Mean: " << mean << std::endl;
+  std::cout << "e57__MEAN__f82 " << mean << std::endl;
 
   thrust::minstd_rand rng;
 
-  //stddev of 10 is fairly concentrated - to get really good performance
-  //will have to handle the case of a fair amount of contention
   thrust::random::experimental::normal_distribution<float> normalDist((float)mean, stddev);
 
   for (size_t i = 0; i < numElems; ++i) {
@@ -64,7 +63,13 @@ int main(int argc, char **argv) {
   timer.Start();
   computeHistogram(d_vals, d_histo, numBins, numElems);
   timer.Stop();
-  std::cout << "Histo kernel took " << timer.Elapsed() << " msec" << std::endl;
+  int err = printf("e57__TIMING__f82 %f msecs.\n", timer.Elapsed());
+
+  if (err < 0) {
+    //Couldn't print! Probably the student closed stdout - bad news
+    std::cerr << "Couldn't print timing information! STDOUT Closed!" << std::endl;
+    exit(1);
+  }
 
   unsigned int *h_gpu = new unsigned int[numBins];
 
