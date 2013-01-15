@@ -1,5 +1,7 @@
 #include "../student/utils.h"
 
+#include <iostream>
+
 #include <thrust/sort.h>
 #include <thrust/binary_search.h>
 #include <thrust/adjacent_difference.h>
@@ -82,6 +84,8 @@ void computeHistogram(const unsigned int* const d_vals,
   ////////////////////////////////////////////////////////////
   //Solution 3, with thrust and sorting
   //Theoretically doing a full sort for a histogram is overkill
+  //This will be faster than the smem atomic version for distributions
+  //that have VERY small variance
   /*thrust::device_ptr<unsigned int> dv((unsigned int *)d_vals);
 
   thrust::sort(dv, dv + numElems);
@@ -95,7 +99,8 @@ void computeHistogram(const unsigned int* const d_vals,
 
   /////////////////////////////////////////////////////////////
   //Solution 4
-  //Use a 1/100 sampling to determine mean, then use registers
+  //Use a 1/N sampling to determine approx. mean & variance, 
+  //then use registers
   //for accumulation of values around mean to reduce contention
   //To be implemented
 
