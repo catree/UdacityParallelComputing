@@ -1,5 +1,5 @@
 NVCC=nvcc
-NVCC_OPTS=-O3 -arch=sm_20 -Xcompiler -Wall -Xcompiler -Wextra
+NVCC_OPTS=-O3 -arch=sm_20 -Xcompiler -Wall -Xcompiler -Wextra -m64
 
 histo: compare ../student/main.cu ../student/reference.cpp solution.o Makefile
 	nvcc -o hw ../student/main.cu solution.o $(NVCC_OPTS)
