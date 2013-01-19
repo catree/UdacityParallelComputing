@@ -32,7 +32,7 @@ int main(int argc, char **argv) {
     output_file = std::string(argv[2]);
   }
   else {
-    std::cerr << "Usage: ./hw# input_file output_file" << std::endl;
+    std::cerr << "Usage: ./hw input_file output_file" << std::endl;
     exit(1);
   }
   //load the image and give us our input and output pointers
