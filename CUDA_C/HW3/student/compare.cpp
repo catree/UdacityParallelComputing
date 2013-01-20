@@ -10,8 +10,8 @@ int main(int argc, char **argv) {
     exit(1);
   }
 
-  cv::Mat gold = cv::imread(argv[1], -1);
-  cv::Mat test = cv::imread(argv[2], -1);
+  cv::Mat gold = cv::imread(argv[1], CV_LOAD_IMAGE_COLOR);
+  cv::Mat test = cv::imread(argv[2], CV_LOAD_IMAGE_COLOR);
 
   if (!gold.isContinuous() || !test.isContinuous()) {
     std::cerr << "Matrices aren't continuous!" << std::endl;

@@ -1,5 +1,4 @@
 #Sample python file for running CUDA Assignments
-#Created 1/6/13 by Erich Elsen
 
 import random
 import string
@@ -52,7 +51,7 @@ def runCudaAssignment():
 
     #run their compiled code
     try:
-        progOutput = subprocess.check_output(['./hw', 'cinque_terre_small.jpg', random_output_name], stderr = subprocess.STDOUT)
+        progOutput = subprocess.check_output(['./hw', 'memorial.exr', random_output_name], stderr = subprocess.STDOUT)
     except subprocess.CalledProcessError, e:
         #program failed, dump possible Make warnings, program output and quit
         progOutput, time = stripPrints(e.output, timingStringIdentifier)
@@ -89,7 +88,7 @@ def runCudaAssignment():
     #    return
 
     try:
-        results['compareOutput'] = subprocess.check_output(['./compare', 'cinque_terre.gold', random_output_name], stderr = subprocess.STDOUT)
+        results['compareOutput'] = subprocess.check_output(['./compare', 'memorial_png.gold', random_output_name], stderr = subprocess.STDOUT)
     except subprocess.CalledProcessError, e:
         #images don't match
         #dump image anyway?

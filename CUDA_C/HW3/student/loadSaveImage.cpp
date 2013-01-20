@@ -65,5 +65,7 @@ void saveImageHDR(const float* const image,
 
   cv::Mat imageHDR(2, sizes, CV_32FC3, (void *)image);
 
+  imageHDR = imageHDR * 255;
+
   cv::imwrite(output_file.c_str(), imageHDR);
 }
