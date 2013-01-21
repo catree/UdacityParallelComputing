@@ -169,21 +169,24 @@ void reference_calc(const uchar4* const h_sourceImg,
   //for each color channel we'll need two buffers and we'll ping-pong between them
   float *blendedValsRed_1 = new float[srcSize];
   float *blendedValsRed_2 = new float[srcSize];
-  memset(blendedValsRed_1, 0, sizeof(float) * srcSize);
-  memset(blendedValsRed_2, 0, sizeof(float) * srcSize);
 
   float *blendedValsBlue_1 = new float[srcSize];
   float *blendedValsBlue_2 = new float[srcSize];
-  memset(blendedValsBlue_1, 0, sizeof(float) * srcSize);
-  memset(blendedValsBlue_2, 0, sizeof(float) * srcSize);
 
   float *blendedValsGreen_1 = new float[srcSize];
   float *blendedValsGreen_2 = new float[srcSize];
-  memset(blendedValsGreen_1, 0, sizeof(float) * srcSize);
-  memset(blendedValsGreen_2, 0, sizeof(float) * srcSize);
+
+  for (size_t i = 0; i < srcSize; ++i) {
+    blendedValsRed_1[i] = red_src[i];
+    blendedValsRed_2[i] = red_src[i];
+    blendedValsBlue_1[i] = blue_src[i];
+    blendedValsBlue_2[i] = blue_src[i];
+    blendedValsGreen_1[i] = green_src[i];
+    blendedValsGreen_2[i] = green_src[i];
+  }
 
   //Perform the solve on each color channel
-  const size_t numIterations = 3000;
+  const size_t numIterations = 800;
   for (size_t i = 0; i < numIterations; ++i) {
     computeIteration(red_dst, strictInteriorPixels, borderPixels,
                      interiorPixelList, numColsSource, blendedValsRed_1, g_red,

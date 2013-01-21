@@ -318,14 +318,15 @@ void your_blend(const uchar4* const h_sourceImg,
   checkCudaErrors(cudaMalloc(&blendedImage_Green_1, sizeof(float) * imgSize));
   checkCudaErrors(cudaMalloc(&blendedImage_Green_2, sizeof(float) * imgSize));
 
-  checkCudaErrors(cudaMemset(blendedImage_Red_1, 0, sizeof(float) * imgSize));
-  checkCudaErrors(cudaMemset(blendedImage_Red_2, 0, sizeof(float) * imgSize));
-  checkCudaErrors(cudaMemset(blendedImage_Blue_1, 0, sizeof(float) * imgSize));
-  checkCudaErrors(cudaMemset(blendedImage_Blue_2, 0, sizeof(float) * imgSize));
-  checkCudaErrors(cudaMemset(blendedImage_Green_1, 0, sizeof(float) * imgSize));
-  checkCudaErrors(cudaMemset(blendedImage_Green_2, 0, sizeof(float) * imgSize));
+  //set initial conditions to source image, since it is fairly close to the solution
+  thrust::copy(d_red_source.begin(), d_red_source.end(), thrust::device_ptr<float>(blendedImage_Red_1));
+  thrust::copy(d_red_source.begin(), d_red_source.end(), thrust::device_ptr<float>(blendedImage_Red_2));
+  thrust::copy(d_blue_source.begin(), d_blue_source.end(), thrust::device_ptr<float>(blendedImage_Blue_1));
+  thrust::copy(d_blue_source.begin(), d_blue_source.end(), thrust::device_ptr<float>(blendedImage_Blue_2));
+  thrust::copy(d_green_source.begin(), d_green_source.end(), thrust::device_ptr<float>(blendedImage_Green_1));
+  thrust::copy(d_green_source.begin(), d_green_source.end(), thrust::device_ptr<float>(blendedImage_Green_2));
 
-  const size_t numIterations = 3000;
+  const size_t numIterations = 800;
   
   for (size_t i = 0; i < numIterations; ++i) {
     compute_seamless_clone_iteration<<<gridSize, blockSize>>>(
