@@ -66,7 +66,7 @@ void computeIteration(const unsigned char* const dstImg,
 }
 
 //pre-compute the values of g, which depend only the source image
-//and aren't iteration dependant.
+//and aren't iteration dependent.
 void computeG(const unsigned char* const channel,
               float* const g,
               const size_t numColsSource,
@@ -176,6 +176,7 @@ void reference_calc(const uchar4* const h_sourceImg,
   float *blendedValsGreen_1 = new float[srcSize];
   float *blendedValsGreen_2 = new float[srcSize];
 
+  //IC is the source image, copy over
   for (size_t i = 0; i < srcSize; ++i) {
     blendedValsRed_1[i] = red_src[i];
     blendedValsRed_2[i] = red_src[i];
