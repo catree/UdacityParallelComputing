@@ -1,5 +1,5 @@
 //Udacity HW 4
-//Sorting
+//Radix Sorting
 
 #include "reference_calc.cpp"
 #include "utils.h"
@@ -15,6 +15,9 @@
    sort them so that we know which pixels to alter to remove the
    red eye.
 
+   Each score is associated with a position, when you sort the scores,
+   you must also move the positions accordingly.
+
    Implementing Parallel Radix Sort with CUDA
    ==========================================
 
@@ -25,13 +28,18 @@
    so we have to know how many 0s there are to be able to start moving
    1s into the correct position.
 
-   1) Histogram digit of counts
+   1) Histogram of the number of occurrences of each digit
    2) Exclusive Prefix Sum of Histogram
    3) Determine relative offset of each digit
         For example [0 0 1 1 0 0 1]
                 ->  [0 1 0 1 2 3 2]
    4) Combine the results of steps 2 & 3 to determine the final
       output location for each element and move it there
+
+   LSB Radix sort is an out-of-place sort and you will need to 
+   ping-pong values between the input and output buffers we have
+   provided.  Make sure the final sorted results end up in the
+   output buffer!  Hint: You may need to do a copy at the end.
 
  */
 
@@ -71,6 +79,7 @@ void your_sort(unsigned int* const d_inputVals,
   */
    
 
+  //TODO
   //PUT YOUR SORT HERE
 
   /* *********************************************************************** *

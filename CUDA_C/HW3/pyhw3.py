@@ -1,4 +1,3 @@
-import array
 import OpenEXR
 import Imath
 import numpy
@@ -9,6 +8,7 @@ rgb_hdr    = OpenEXR.InputFile("memorial.exr")
 header     = rgb_hdr.header()
 dw         = header["dataWindow"]
 sz         = (dw.max.x - dw.min.x + 1, dw.max.y - dw.min.y + 1)
+print header
 
 r_hdr, g_hdr, b_hdr = rgb_hdr.channels("RGB", pt)
 
@@ -16,7 +16,15 @@ r = numpy.fromstring(r_hdr, dtype=numpy.float32).reshape((sz[1], sz[0]))
 g = numpy.fromstring(g_hdr, dtype=numpy.float32).reshape((sz[1], sz[0]))
 b = numpy.fromstring(b_hdr, dtype=numpy.float32).reshape((sz[1], sz[0]))
 
+
+red_histo, red_edges = numpy.histogram(r, bins = 275)
+print red_histo[0:10]
+print sum(red_histo), sum(sum(r)) / r.size
+matplotlib.pyplot.plot(red_histo)
+matplotlib.pyplot.show()
+
 brightest = max(numpy.max(r), numpy.max(g), numpy.max(b))
+print brightest
 r, g, b   = r / brightest, g / brightest, b / brightest
 rgb       = numpy.concatenate((r[:,:,numpy.newaxis],g[:,:,numpy.newaxis],b[:,:,numpy.newaxis]), axis=2).copy()
 
@@ -82,7 +90,25 @@ r_new_cpu = X_new *  3.2406 + Y_new * -1.5372 + Z_new * -0.4986;
 g_new_cpu = X_new * -0.9689 + Y_new *  1.8758 + Z_new *  0.0415;
 b_new_cpu = X_new *  0.0557 + Y_new * -0.2040 + Z_new *  1.0570;
 
+r_new_cpu = r_new_cpu.astype(numpy.float32)
+g_new_cpu = g_new_cpu.astype(numpy.float32)
+b_new_cpu = b_new_cpu.astype(numpy.float32)
+
 rgb_new_cpu = numpy.concatenate((r_new_cpu[:,:,numpy.newaxis],g_new_cpu[:,:,numpy.newaxis],b_new_cpu[:,:,numpy.newaxis]), axis=2).copy()
+
+print rgb_new_cpu.shape
+
+data = rgb_new_cpu.tostring()
+
+header['channels']['R'] = Imath.Channel(Imath.PixelType(OpenEXR.FLOAT))
+header['channels']['G'] = Imath.Channel(Imath.PixelType(OpenEXR.FLOAT))
+header['channels']['B'] = Imath.Channel(Imath.PixelType(OpenEXR.FLOAT))
+
+ofs = OpenEXR.OutputFile('pythonMemorial.exr', header)
+ofs.writePixels({'R': r_new_cpu.tostring(), 'G': g_new_cpu.tostring(), 'B': b_new_cpu.tostring()})
+
+
+ofs.close()
 
 #for r in range(r_new_cpu.shape[0]):
 #    for c in range(r_new_cpu.shape[1]):
