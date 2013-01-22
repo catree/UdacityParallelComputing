@@ -16,7 +16,7 @@ timingStringIdentifier = 'e57__TIMING__f82'
 meanStringIdentifier   = 'e57__MEAN__f82'
 
 exactComparison        = False
-perPixelErrorTolerance = '1'
+perPixelErrorTolerance = '2'
 globalErrorTolerance   = '0.01'
 
 #strip all timing strings from the output
