@@ -3,6 +3,8 @@
 #include "loadSaveImage.h"
 #include <thrust/extrema.h>
 
+#include "hdrImageData.h"
+
 //chroma-LogLuminance Space
 float *d_x__;
 float *d_y__;
@@ -12,9 +14,6 @@ float *d_logY__;
 unsigned int *d_cdf__;
 
 const int numBins = 1024;
-
-size_t numRows__;
-size_t numCols__;
 
 /* Copied from Mike's IPython notebook with some minor modifications
  * Mainly double precision constants to floats and log10 -> log10f
@@ -135,31 +134,25 @@ __global__ void tonemap(
 //no point in returning error codes...
 void preProcess(float** d_luminance, unsigned int** d_cdf,
                 size_t *numRows, size_t *numCols,
-                unsigned int *numberOfBins,
-                const std::string &filename) {
+                unsigned int *numberOfBins) {
   //make sure the context initializes ok
   checkCudaErrors(cudaFree(0));
 
-  float *imgPtr; //we will become responsible for this pointer
-  loadImageHDR(filename, &imgPtr, &numRows__, &numCols__);
-  *numRows = numRows__;
-  *numCols = numCols__;
+  float *imgPtr = hdrImageData;
+  *numRows = hdrImageNumRows;
+  *numCols = hdrImageNumColumns;
 
-  //first thing to do is split incoming BGR float data into separate channels
-  size_t numPixels = numRows__ * numCols__;
+  //first thing to do is split incoming RGB float data into separate channels
+  size_t numPixels = hdrImageNumRows * hdrImageNumColumns;
   float *red   = new float[numPixels];
   float *green = new float[numPixels];
   float *blue  = new float[numPixels];
 
-  //Remeber image is loaded BGR
   for (size_t i = 0; i < numPixels; ++i) {
-    blue[i]  = imgPtr[3 * i + 0];
+    red[i]   = imgPtr[3 * i + 0];
     green[i] = imgPtr[3 * i + 1];
-    red[i]   = imgPtr[3 * i + 2];
+    blue[i]  = imgPtr[3 * i + 2];
   }
-
-  delete[] imgPtr; //being good citizens are releasing resources
-                   //allocated in loadImageHDR
 
   float *d_red, *d_green, *d_blue;  //RGB space
 
@@ -178,11 +171,11 @@ void preProcess(float** d_luminance, unsigned int** d_cdf,
 
   //convert from RGB space to chrominance/luminance space xyY
   const dim3 blockSize(32, 16, 1);
-  const dim3 gridSize( (numCols__ + blockSize.x - 1) / blockSize.x, 
-                       (numRows__ + blockSize.y - 1) / blockSize.y, 1);
+  const dim3 gridSize( (hdrImageNumColumns + blockSize.x - 1) / blockSize.x, 
+                       (hdrImageNumRows    + blockSize.y - 1) / blockSize.y, 1);
   rgb_to_xyY<<<gridSize, blockSize>>>(d_red, d_green, d_blue,
                                       d_x__, d_y__,   d_logY__,
-                                      .0001f, numRows__, numCols__);
+                                      .0001f, hdrImageNumRows, hdrImageNumColumns);
 
   cudaDeviceSynchronize(); checkCudaErrors(cudaGetLastError());
 
@@ -206,7 +199,7 @@ void preProcess(float** d_luminance, unsigned int** d_cdf,
 void postProcess(const std::string& output_file, 
                  size_t numRows, size_t numCols,
                  float min_log_Y, float max_log_Y) {
-  const int numPixels = numRows__ * numCols__;
+  const int numPixels = hdrImageNumRows * hdrImageNumColumns;
 
   const int numThreads = 192;
 

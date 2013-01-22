@@ -7,8 +7,7 @@
 #include <stdio.h>
 
 void preProcess(float **d_luminance, unsigned int **d_cdf,
-                size_t *numRows, size_t *numCols, unsigned int *numBins,
-                const std::string& filename);
+                size_t *numRows, size_t *numCols, unsigned int *numBins);
 
 void postProcess(const std::string& output_file, size_t numRows, size_t numCols,
                  float min_logLum, float max_logLum);
@@ -30,17 +29,16 @@ int main(int argc, char **argv) {
 
   std::string input_file;
   std::string output_file;
-  if (argc == 3) {
-    input_file  = std::string(argv[1]);
-    output_file = std::string(argv[2]);
+  if (argc == 2) {
+    output_file = std::string(argv[1]);
   }
   else {
-    std::cerr << "Usage: ./hw input_file output_file" << std::endl;
+    std::cerr << "Usage: ./hw output_file" << std::endl;
     exit(1);
   }
   //load the image and give us our input and output pointers
   preProcess(&d_luminance, &d_cdf,
-             &numRows, &numCols, &numBins, input_file);
+             &numRows, &numCols, &numBins);
 
   GpuTimer timer;
   float min_logLum, max_logLum;
