@@ -57,7 +57,7 @@ def runCudaAssignment():
 
     #run their compiled code
     try:
-        progOutput = subprocess.check_output(['./hw', 'red_eye_effect_template_5.jpg', random_output_name], stderr = subprocess.STDOUT)
+        progOutput = subprocess.check_output(['./hw', 'red_eye_effect_5.jpg', random_output_name], stderr = subprocess.STDOUT)
     except subprocess.CalledProcessError, e:
         #program failed, dump possible Make warnings, program output and quit
         progOutput, time = stripPrints(e.output, timingStringIdentifier)
