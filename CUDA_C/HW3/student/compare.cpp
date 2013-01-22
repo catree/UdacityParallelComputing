@@ -5,8 +5,8 @@
 #include <iostream>
 
 int main(int argc, char **argv) {
-  if (!(argc == 3 || argc == 4)) {
-    std::cerr << "Usage: ./compare goldImage testImage [epsilon]" << std::endl;
+  if (!(argc == 3 || argc == 5)) {
+    std::cerr << "Usage: ./compare goldImage testImage [per-pixel-error-tolerance global-error-tolerance]" << std::endl;
     exit(1);
   }
 
@@ -56,8 +56,9 @@ int main(int argc, char **argv) {
   if (argc == 3)
     checkResultsExact(goldPtr, testPtr, gold.rows * gold.cols * gold.channels());
   else {
-    double epsilon = atof(argv[3]);
-    checkResultsEps(goldPtr, testPtr, gold.rows * gold.cols * gold.channels(), epsilon, epsilon);
+    double perPixelError = atof(argv[3]);
+    double globalError   = atof(argv[4]);
+    checkResultsEps(goldPtr, testPtr, gold.rows * gold.cols * gold.channels(), perPixelError, globalError);
   }
 
   std::cout << "PASS" << std::endl;

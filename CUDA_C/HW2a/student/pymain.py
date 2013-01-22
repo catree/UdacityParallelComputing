@@ -14,6 +14,11 @@ image_end   = 'END_IMAGE_0238jfw08fjsiufhw8frs'
 
 timingStringIdentifier = 'e57__TIMING__f82'
 meanStringIdentifier   = 'e57__MEAN__f82'
+
+exactComparison        = False
+perPixelErrorTolerance = '1'
+globalErrorTolerance   = '0.01'
+
 #strip all timing strings from the output
 def stripPrints(inputString, identifier):
     pos = inputString.find(identifier)
@@ -89,7 +94,10 @@ def runCudaAssignment():
     #    return
 
     try:
-        results['compareOutput'] = subprocess.check_output(['./compare', 'cinque_terre.gold', random_output_name], stderr = subprocess.STDOUT)
+        if exactComparison:
+            results['compareOutput'] = subprocess.check_output(['./compare', 'cinque_terre.gold', random_output_name], stderr = subprocess.STDOUT)
+        else:
+            results['compareOutput'] = subprocess.check_output(['./compare', 'cinque_terre.gold', random_output_name, perPixelErrorTolerance, globalErrorTolerance], stderr = subprocess.STDOUT)
     except subprocess.CalledProcessError, e:
         #images don't match
         #dump image anyway?
@@ -108,6 +116,7 @@ def runCudaAssignment():
         print image_start + json.dumps(data) + image_end
         print json.dumps(results)
 
+        return
 
     results['compareResult'] = True
 
