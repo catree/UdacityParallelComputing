@@ -30,9 +30,9 @@
 
 
 __global__
-void yourHisto(const unsigned int* const vals,
-                 unsigned int* const histo,
-                 int numVals)
+void yourHisto(const unsigned int* const vals, //INPUT
+               unsigned int* const histo,      //OUPUT
+               int numVals)
 {
   //TODO fill in this kernel to calculate the histogram
   //as quickly as possible
@@ -42,8 +42,8 @@ void yourHisto(const unsigned int* const vals,
   //write faster code
 }
 
-void computeHistogram(const unsigned int* const d_vals,
-                      unsigned int* const d_histo,
+void computeHistogram(const unsigned int* const d_vals, //INPUT
+                      unsigned int* const d_histo,      //OUTPUT
                       const unsigned int numBins,
                       const unsigned int numElems)
 {
