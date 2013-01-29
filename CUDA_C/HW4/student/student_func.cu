@@ -12,8 +12,10 @@
    This is accomplished by first creating a score for every pixel that
    tells us how likely it is to be a red eye pixel.  We have already
    done this for you - you are receiving the scores and need to 
-   sort them so that we know which pixels to alter to remove the
-   red eye.
+   sort them in ascending order so that we know which pixels to 
+   alter to remove the red eye.
+
+   Note: ascending order == smallest to largest
 
    Each score is associated with a position, when you sort the scores,
    you must also move the positions accordingly.
@@ -56,7 +58,7 @@ void your_sort(unsigned int* const d_inputVals,
   * otherwise this code will take too much time and make it seem like your    *
   * GPU implementation isn't fast enough.                                     *
   *                                                                           *
-  * This code MUST RUN BEFORE YOUR CODE since you are likely going to change  *
+  * This code MUST RUN BEFORE YOUR CODE in case you accidentally change       *
   * the input values when implementing your radix sort.                       *
   *                                                                           *
   * This code performs the reference radix sort on the host and compares your *
