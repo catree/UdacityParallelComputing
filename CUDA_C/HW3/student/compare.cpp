@@ -10,8 +10,18 @@ int main(int argc, char **argv) {
     exit(1);
   }
 
-  cv::Mat gold = cv::imread(argv[1], CV_LOAD_IMAGE_COLOR);
-  cv::Mat test = cv::imread(argv[2], CV_LOAD_IMAGE_COLOR);
+  cv::Mat gold = cv::imread(argv[1], -1);
+  cv::Mat test = cv::imread(argv[2], -1);
+
+  if (gold.empty()) {
+    std::cerr << "Couldn't open file: " << argv[1] << std::endl;
+    exit(1);
+  }
+
+  if (test.empty()) {
+    std::cerr << "Couldn't open file: " << argv[2] << std::endl;
+    exit(1);
+  }
 
   if (!gold.isContinuous() || !test.isContinuous()) {
     std::cerr << "Matrices aren't continuous!" << std::endl;
