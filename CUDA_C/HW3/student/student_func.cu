@@ -91,7 +91,7 @@ void your_histogram_and_prefixsum(const float* const d_logLuminance,
     2) subtract them to find the range
     3) generate a histogram of all the values in the logLuminance channel using
        the formula: bin = (lum[i] - lumMin) / lumRange * numBins
-    4) Perform an inclusive scan (prefix sum) on the histogram to get
+    4) Perform an exclusive scan (prefix sum) on the histogram to get
        the cumulative distribution of luminance values (this should go in the
        incoming d_cdf pointer which already has been allocated for you)       */
 

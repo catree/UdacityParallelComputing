@@ -73,7 +73,7 @@ void your_histogram_and_prefixsum(const float* const d_luminance,
   /* The scan is so small, that most techniques will probably not have significant
      difference in their execution times.  Thrust may actual be fairly slow because
      of its high overhead. */
-  thrust::inclusive_scan(histo, histo + numBins, cdf);
+  thrust::exclusive_scan(histo, histo + numBins, cdf);
 
 
   /****************************************************************************

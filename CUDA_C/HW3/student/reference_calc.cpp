@@ -31,11 +31,11 @@ void referenceCalculation(const float* const h_logLuminance, unsigned int* const
   }
 
   //Step 4
-  //finally we perform and inclusive scan (prefix sum)
+  //finally we perform and exclusive scan (prefix sum)
   //on the histogram to get the cumulative distribution
-  h_cdf[0] = histo[0];
+  h_cdf[0] = 0;
   for (size_t i = 1; i < numBins; ++i) {
-    h_cdf[i] = h_cdf[i - 1] + histo[i];
+    h_cdf[i] = h_cdf[i - 1] + histo[i - 1];
   }
 
   delete[] histo;
