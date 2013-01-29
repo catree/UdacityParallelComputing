@@ -17,7 +17,7 @@ void rgba_to_greyscale(const uchar4* const rgbaImage,
     return;
 
   const uchar4 rgba            = rgbaImage[thread_1D_pos];
-  const unsigned int intensity = (rgba.x + rgba.y + rgba.z) / 3;
+  const unsigned int intensity = .299f * rgba.x + .587f * rgba.y + .114f * rgba.z;
 
   greyImage[thread_1D_pos] = intensity;
 }
@@ -102,7 +102,7 @@ void your_rgba_to_greyscale(const uchar4 * const h_rgbaImage, uchar4 * const d_r
                              numRows * numCols * sizeof(unsigned char), 
                              cudaMemcpyDeviceToHost));
   referenceCalculation(h_rgbaImage, h_greyImageRef, numRows, numCols);
-  checkResultsExact(h_greyImageRef, h_greyImageGPU, numRows * numCols);
+  checkResultsEps(h_greyImageRef, h_greyImageGPU, numRows * numCols, 1, .001);
  
   delete [] h_greyImageGPU;
   delete [] h_greyImageRef;*/

@@ -15,9 +15,9 @@ image_end   = 'END_IMAGE_0238jfw08fjsiufhw8frs'
 timingStringIdentifier = 'e57__TIMING__f82'
 meanStringIdentifier   = 'e57__MEAN__f82'
 
-exactComparison        = True
+exactComparison        = False
 perPixelErrorTolerance = '1'
-globalErrorTolerance   = '0.01'
+globalErrorTolerance   = '0.001'
 
 #strip all timing strings from the output
 def stripPrints(inputString, identifier):

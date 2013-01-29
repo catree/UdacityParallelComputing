@@ -14,9 +14,19 @@
 //which is one byte in size.
 
 //To convert an image from color to grayscale one simple method is to
-//set the intensity to the average of the RGB channels.  This is the method
-//we will use in this assignment.  A more sophisticated method takes into
-//account how the eye perceives color and weights the channels unequally.
+//set the intensity to the average of the RGB channels.  But we will
+//use a more sophisticated method that takes into account how the eye 
+//perceives color and weights the channels unequally.
+
+//The eye responds most strongly to green followed by red and then blue.
+//The NTSC (National Television System Committee) recommends the following
+//formula for color to greyscale conversion:
+
+//I = .299f * R + .587f * G + .114f * B
+
+//Notice the trailing f's on the numbers which indicate that they are 
+//single precision floating point constants and not double precision
+//constants.
 
 //You should fill in the kernel as well as set the block and grid sizes
 //so that the entire image is processed.
@@ -34,8 +44,8 @@ void rgba_to_greyscale(const uchar4* const rgbaImage,
   //the mapping from components of a uchar4 to RGBA is:
   // .x -> R ; .y -> G ; .z -> B ; .w -> A
   //
-  //The output (greyImage) at each pixel should be the average 
-  //of the RGB for that pixel. 
+  //The output (greyImage) at each pixel should be the result of
+  //applying the formula: output = .299f * R + .587f * G + .114f * B;
   //Note: We will be ignoring the alpha channel for this conversion
 
   //First create a mapping from the 2D block and grid locations
@@ -75,7 +85,7 @@ void your_rgba_to_greyscale(const uchar4 * const h_rgbaImage, uchar4 * const d_r
                              cudaMemcpyDeviceToHost));
   referenceCalculation(h_rgbaImage, h_greyImageRef, numRows, numCols);
 
-  checkResultsExact(h_greyImageRef, h_greyImageGPU, numRows * numCols); 
+  checkResultsEps(h_greyImageRef, h_greyImageGPU, numRows * numCols, 1, .001); 
  
   delete [] h_greyImageGPU;
   delete [] h_greyImageRef;*/
