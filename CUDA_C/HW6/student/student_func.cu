@@ -55,7 +55,8 @@
       Sum2: += SourceImg[p] - SourceImg[neighbor]   (for all four neighbors)
 
    2) Calculate the new pixel value:
-      ImageGuess_next[p] = (Sum1 + Sum2) / 4.f <--- Notice that the results is FLOATING POINT
+      float newVal= (Sum1 + Sum2) / 4.f  <------ Notice that the result is FLOATING POINT
+      ImageGuess_next[p] = min(255, max(0, newVal)); //clamp to [0, 255]
 
 
     In this assignment we will do 800 iterations.
@@ -86,15 +87,16 @@ void your_blend(const uchar4* const h_sourceImg,  //IN
      3) Separate out the incoming image into three separate channels
 
      4) Create two float(!) buffers for each color channel that will
-        act as our guesses.  Initialize them to the source image
-        since that will act as our intial guess.
+        act as our guesses.  Initialize them to the respective color
+        channel of the source image since that will act as our intial guess.
 
      5) For each color channel perform the Jacobi iteration described 
         above 800 times.
 
      6) Create the output image by replacing all the interior pixels
         in the destination image with the result of the Jacobi iterations.
-        Just cast the floating point values to unsigned chars.
+        Just cast the floating point values to unsigned chars since we have
+        already made sure to clamp them to the correct range.
 
       Since this is final assignment we provide little boilerplate code to
       help you.  Notice that all the input/output pointers are HOST pointers.
@@ -119,9 +121,8 @@ void your_blend(const uchar4* const h_sourceImg,  //IN
   /*
     uchar4* h_reference = new uchar4[srcSize];
     reference_calc(h_sourceImg, numRowsSource, numColsSource,
-                   h_destImg, h_blendedImg);
+                   h_destImg, h_reference);
 
-    //TODO this needs to be modified to use the correct Epsilon compare once Mike implements it
-    checkResultsExact((unsigned char *)h_reference, (unsigned char *)h_blendedImg, 4 * srcSize);
+    checkResultsEps((unsigned char *)h_reference, (unsigned char *)h_blendedImg, 4 * srcSize, 2, .01);
     delete[] h_reference; */
 }
