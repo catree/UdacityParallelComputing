@@ -208,6 +208,7 @@ void your_gaussian_blur(const uchar4 * const h_inputImageRGBA, uchar4 * const d_
   delete [] h_outputImage;
   delete [] h_outputReference;*/
 
+  //TODO: make sure you free the memory you allocated
   cudaFree(d_red);
   cudaFree(d_redBlurred);
   cudaFree(d_green);
