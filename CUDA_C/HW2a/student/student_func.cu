@@ -58,6 +58,8 @@ Image (applying filter to pixel at the center of the square):
 //Then every thread can perform the steps 2 through 4 in the diagram above
 //completely independently of one another.
 
+//Note that the filter is square, so the filter height is == filterWidth
+
 //Once you have gotten that working correctly, then you can think about using
 //shared memory and having the threads cooperate to achieve better performance.
 __global__
