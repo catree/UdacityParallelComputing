@@ -119,9 +119,9 @@ void recombineChannels(const unsigned char* const redChannel,
   if (thread_2D_pos.x >= numCols || thread_2D_pos.y >= numRows)
     return;
 
-  unsigned char red = redChannel[thread_1D_pos];
+  unsigned char red   = redChannel[thread_1D_pos];
   unsigned char green = greenChannel[thread_1D_pos];
-  unsigned char blue = blueChannel[thread_1D_pos];
+  unsigned char blue  = blueChannel[thread_1D_pos];
 
   //Alpha should be 255 for no transparency
   uchar4 outputPixel = make_uchar4(red, green, blue, 255);
@@ -150,6 +150,7 @@ void your_gaussian_blur(const uchar4 * const h_inputImageRGBA, uchar4 * const d_
 
   //TODO:
   //Allocate memory for the filter on the GPU
+  //Use the pointer d_filter that we have already declared for you
   //You need to allocate memory for the filter with cudaMalloc
   //be sure to use checkCudaErrors like the above examples to
   //be able to tell if anything goes wrong
