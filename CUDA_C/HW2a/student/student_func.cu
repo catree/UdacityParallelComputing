@@ -129,24 +129,24 @@ void recombineChannels(const unsigned char* const redChannel,
   outputImageRGBA[thread_1D_pos] = outputPixel;
 }
 
-void your_gaussian_blur(const uchar4 * const h_inputImageRGBA, uchar4 * const d_inputImageRGBA,
-                        uchar4* const d_outputImageRGBA, const size_t numRows, const size_t numCols,
-                        const float* const h_filter, const int filterWidth)
+unsigned char *d_red, *d_green, *d_blue;
+unsigned char *d_redBlurred, *d_greenBlurred, *d_blueBlurred;
+float         *d_filter;
+
+void allocateMemoryAndCopyToGPU(const size_t numRowsImage, const size_t numColsImage,
+                                const float* const h_filter, const size_t filterWidth)
 {
-  unsigned char *d_red, *d_green, *d_blue;
-  unsigned char *d_redBlurred, *d_greenBlurred, *d_blueBlurred;
-  float         *d_filter;
 
   //allocate memory for the three different channels
   //original
-  checkCudaErrors(cudaMalloc(&d_red,   sizeof(unsigned char) * numRows * numCols));
-  checkCudaErrors(cudaMalloc(&d_green, sizeof(unsigned char) * numRows * numCols));
-  checkCudaErrors(cudaMalloc(&d_blue,  sizeof(unsigned char) * numRows * numCols));
+  checkCudaErrors(cudaMalloc(&d_red,   sizeof(unsigned char) * numRowsImage * numColsImage));
+  checkCudaErrors(cudaMalloc(&d_green, sizeof(unsigned char) * numRowsImage * numColsImage));
+  checkCudaErrors(cudaMalloc(&d_blue,  sizeof(unsigned char) * numRowsImage * numColsImage));
 
   //blurred
-  checkCudaErrors(cudaMalloc(&d_redBlurred,   sizeof(unsigned char) * numRows * numCols));
-  checkCudaErrors(cudaMalloc(&d_greenBlurred, sizeof(unsigned char) * numRows * numCols));
-  checkCudaErrors(cudaMalloc(&d_blueBlurred,  sizeof(unsigned char) * numRows * numCols));
+  checkCudaErrors(cudaMalloc(&d_redBlurred,   sizeof(unsigned char) * numRowsImage * numColsImage));
+  checkCudaErrors(cudaMalloc(&d_greenBlurred, sizeof(unsigned char) * numRowsImage * numColsImage));
+  checkCudaErrors(cudaMalloc(&d_blueBlurred,  sizeof(unsigned char) * numRowsImage * numColsImage));
 
   //TODO:
   //Allocate memory for the filter on the GPU
@@ -161,15 +161,22 @@ void your_gaussian_blur(const uchar4 * const h_inputImageRGBA, uchar4 * const d_
   //on the GPU.  cudaMemcpy(dst, src, numBytes, cudaMemcpyHostToDevice);
   //Remember to use checkCudaErrors!
 
-  const int warpSize = 32;
-  const dim3 blockSize(warpSize, 16, 1);;
+}
+
+void your_gaussian_blur(const uchar4 * const h_inputImageRGBA, uchar4 * const d_inputImageRGBA,
+                        uchar4* const d_outputImageRGBA, const size_t numRows, const size_t numCols,
+                        const int filterWidth)
+{
   //TODO: Set the correct grid size for the image
+  const dim3 blockSize;
   const dim3 gridSize;
 
   //first kernel to split RGBA into separate channels
   //We take care of launching this one for you
   separateChannels<<<gridSize, blockSize>>>(d_inputImageRGBA, numRows, numCols, d_red, d_green, d_blue);
 
+  //these synchronize calls are here to help you catch errors, once your program
+  //is working correctly you can remove them for more speed
   cudaDeviceSynchronize(); checkCudaErrors(cudaGetLastError());
 
   //second phase does 3 convolutions, one on each color channel
@@ -210,13 +217,16 @@ void your_gaussian_blur(const uchar4 * const h_inputImageRGBA, uchar4 * const d_
  
   delete [] h_outputImage;
   delete [] h_outputReference;*/
+}
 
-  //TODO: make sure you free the memory you allocated
-  cudaFree(d_red);
-  cudaFree(d_redBlurred);
-  cudaFree(d_green);
-  cudaFree(d_greenBlurred);
-  cudaFree(d_blue);
-  cudaFree(d_blueBlurred);
-  cudaFree(d_filter);
+
+//Free all the memory that we allocated
+//TODO: make sure you free any arrays that you allocated
+void cleanup() {
+  checkCudaErrors(cudaFree(d_red));
+  checkCudaErrors(cudaFree(d_redBlurred));
+  checkCudaErrors(cudaFree(d_green));
+  checkCudaErrors(cudaFree(d_greenBlurred));
+  checkCudaErrors(cudaFree(d_blue));
+  checkCudaErrors(cudaFree(d_blueBlurred));
 }

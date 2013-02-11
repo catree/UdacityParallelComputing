@@ -5,6 +5,7 @@
 
 #include "../student/reference_calc.cpp"
 #include "../student/utils.h"
+#include "../student/timer.h"
 
 __global__
 void separateChannels(const uchar4* const inputImageRGBA,
@@ -275,32 +276,36 @@ __global__ void shared_memory_blur(
   }
 }
 
+unsigned char *d_red, *d_green, *d_blue;
+unsigned char *d_redBlurred, *d_greenBlurred, *d_blueBlurred;
+float         *d_filter;
 
-
-void your_gaussian_blur(const uchar4 * const h_inputImageRGBA, uchar4 * const d_inputImageRGBA,
-                        uchar4* const d_outputImageRGBA, const size_t numRows, const size_t numCols,
-                        const float* const h_filter, const int filterWidth)
+void allocateMemoryAndCopyToGPU(const size_t numRowsImage, const size_t numColsImage,
+                                const float* const h_filter, const size_t filterWidth)
 {
+
   //allocate memory for the three different channels
-  //original and blurred
+  //original
+  checkCudaErrors(cudaMalloc(&d_red,   sizeof(unsigned char) * numRowsImage * numColsImage));
+  checkCudaErrors(cudaMalloc(&d_green, sizeof(unsigned char) * numRowsImage * numColsImage));
+  checkCudaErrors(cudaMalloc(&d_blue,  sizeof(unsigned char) * numRowsImage * numColsImage));
 
-  unsigned char *d_red, *d_green, *d_blue;
-  unsigned char *d_redBlurred, *d_greenBlurred, *d_blueBlurred;
-  float         *d_filter;
-
-  checkCudaErrors(cudaMalloc(&d_red,   sizeof(unsigned char) * numRows * numCols));
-  checkCudaErrors(cudaMalloc(&d_green, sizeof(unsigned char) * numRows * numCols));
-  checkCudaErrors(cudaMalloc(&d_blue,  sizeof(unsigned char) * numRows * numCols));
-
-  checkCudaErrors(cudaMalloc(&d_redBlurred,   sizeof(unsigned char) * numRows * numCols));
-  checkCudaErrors(cudaMalloc(&d_greenBlurred, sizeof(unsigned char) * numRows * numCols));
-  checkCudaErrors(cudaMalloc(&d_blueBlurred,  sizeof(unsigned char) * numRows * numCols));
+  //blurred
+  checkCudaErrors(cudaMalloc(&d_redBlurred,   sizeof(unsigned char) * numRowsImage * numColsImage));
+  checkCudaErrors(cudaMalloc(&d_greenBlurred, sizeof(unsigned char) * numRowsImage * numColsImage));
+  checkCudaErrors(cudaMalloc(&d_blueBlurred,  sizeof(unsigned char) * numRowsImage * numColsImage));
 
   //allocate memory for the filter and copy it to the gpu
   checkCudaErrors(cudaMalloc(&d_filter, sizeof(float) * filterWidth * filterWidth));
 
   checkCudaErrors(cudaMemcpy(d_filter, h_filter, sizeof(float) * filterWidth * filterWidth, cudaMemcpyHostToDevice));
+}
 
+
+void your_gaussian_blur(const uchar4 * const h_inputImageRGBA, uchar4 * const d_inputImageRGBA,
+                        uchar4* const d_outputImageRGBA, const size_t numRows, const size_t numCols,
+                        const int filterWidth)
+{
   //written this way to emphasize that the x dimension of the block should be a
   //multiple of the warpSize for coalescing purposes
   const int warpSize = 32;
@@ -361,6 +366,9 @@ void your_gaussian_blur(const uchar4 * const h_inputImageRGBA, uchar4 * const d_
   delete [] h_outputImage;
   delete [] h_outputReference;*/
 
+}
+
+void cleanup() {
   cudaFree(d_red);
   cudaFree(d_redBlurred);
   cudaFree(d_green);
