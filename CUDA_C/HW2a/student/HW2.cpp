@@ -6,13 +6,13 @@
 #include <cuda_runtime.h>
 #include <string>
 
-cv::Mat imageInputRGBA;
-cv::Mat imageOutputRGBA;
+static cv::Mat imageInputRGBA;
+static cv::Mat imageOutputRGBA;
 
-uchar4 *d_inputImageRGBA__;
-uchar4 *d_outputImageRGBA__;
+static uchar4 *d_inputImageRGBA__;
+static uchar4 *d_outputImageRGBA__;
 
-float *h_filter__;
+static float *h_filter__;
 
 size_t numRows() { return imageInputRGBA.rows; }
 size_t numCols() { return imageInputRGBA.cols; }
