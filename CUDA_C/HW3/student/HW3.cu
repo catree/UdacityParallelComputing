@@ -6,14 +6,14 @@
 #include "hdrImageData.h"
 
 //chroma-LogLuminance Space
-float *d_x__;
-float *d_y__;
-float *d_logY__;
+static float *d_x__;
+static float *d_y__;
+static float *d_logY__;
 
 //memory for the cdf
-unsigned int *d_cdf__;
+static unsigned int *d_cdf__;
 
-const int numBins = 1024;
+static const int numBins = 1024;
 
 /* Copied from Mike's IPython notebook with some minor modifications
  * Mainly double precision constants to floats and log10 -> log10f
