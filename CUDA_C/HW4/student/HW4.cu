@@ -330,6 +330,8 @@ void preProcess(unsigned int **inputVals,
 
   cudaMemcpy(*inputVals, thrust::raw_pointer_cast(d_combined_response.data()), sizeof(unsigned int) * numElem, cudaMemcpyDeviceToDevice);
   cudaMemcpy(*inputPos,  thrust::raw_pointer_cast(coords.data()), sizeof(unsigned int) * numElem, cudaMemcpyDeviceToDevice);
+  checkCudaErrors(cudaMemset(*outputVals, 0, sizeof(unsigned int) * numElem));
+  checkCudaErrors(cudaMemset(*outputPos, 0,  sizeof(unsigned int) * numElem));
 }
 
 void postProcess(const unsigned int* const outputVals,
