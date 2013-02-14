@@ -184,6 +184,7 @@ void preProcess(float** d_luminance, unsigned int** d_cdf,
   //allocate memory for the cdf of the histogram
   *numberOfBins = numBins;
   checkCudaErrors(cudaMalloc(&d_cdf__, sizeof(unsigned int) * numBins));
+  checkCudaErrors(cudaMemset(d_cdf__, 0, sizeof(unsigned int) * numBins));
 
   *d_cdf = d_cdf__;
 
