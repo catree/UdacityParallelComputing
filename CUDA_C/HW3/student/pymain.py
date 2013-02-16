@@ -14,8 +14,8 @@ image_end   = 'END_IMAGE_0238jfw08fjsiufhw8frs'
 timingStringIdentifier = 'e57__TIMING__f82'
 meanStringIdentifier   = 'e57__MEAN__f82'
 
-exactComparison        = False
-perPixelErrorTolerance = '2'
+exactComparison        = True
+perPixelErrorTolerance = '1'
 globalErrorTolerance   = '0.01'
 
 #strip all timing strings from the output
@@ -56,7 +56,7 @@ def runCudaAssignment():
 
     #run their compiled code
     try:
-        progOutput = subprocess.check_output(['./hw', random_output_name], stderr = subprocess.STDOUT)
+        progOutput = subprocess.check_output(['./hw', 'memorial.exr', random_output_name], stderr = subprocess.STDOUT)
     except subprocess.CalledProcessError, e:
         #program failed, dump possible Make warnings, program output and quit
         progOutput, time = stripPrints(e.output, timingStringIdentifier)
