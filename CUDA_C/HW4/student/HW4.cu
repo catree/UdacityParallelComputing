@@ -179,14 +179,14 @@ struct combineResponses : thrust::unary_function<float, thrust::tuple<float, flo
 };
 
 //we need to save the input so we can remove the redeye for the output
-thrust::device_vector<unsigned char> d_red;
-thrust::device_vector<unsigned char> d_blue;
-thrust::device_vector<unsigned char> d_green;
+static thrust::device_vector<unsigned char> d_red;
+static thrust::device_vector<unsigned char> d_blue;
+static thrust::device_vector<unsigned char> d_green;
 
-size_t numRowsImg;
-size_t numColsImg;
-size_t templateHalfWidth;
-size_t templateHalfHeight;
+static size_t numRowsImg;
+static size_t numColsImg;
+static size_t templateHalfWidth;
+static size_t templateHalfHeight;
 
 //return types are void since any internal error will be handled by quitting
 //no point in returning error codes...
@@ -330,6 +330,8 @@ void preProcess(unsigned int **inputVals,
 
   cudaMemcpy(*inputVals, thrust::raw_pointer_cast(d_combined_response.data()), sizeof(unsigned int) * numElem, cudaMemcpyDeviceToDevice);
   cudaMemcpy(*inputPos,  thrust::raw_pointer_cast(coords.data()), sizeof(unsigned int) * numElem, cudaMemcpyDeviceToDevice);
+  checkCudaErrors(cudaMemset(*outputVals, 0, sizeof(unsigned int) * numElem));
+  checkCudaErrors(cudaMemset(*outputPos, 0,  sizeof(unsigned int) * numElem));
 }
 
 void postProcess(const unsigned int* const outputVals,

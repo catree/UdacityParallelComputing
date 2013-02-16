@@ -11,13 +11,25 @@ size_t numCols();  //return # of cols in the image
 
 void preProcess(uchar4 **h_inputImageRGBA, uchar4 **h_outputImageRGBA,
                 uchar4 **d_inputImageRGBA, uchar4 **d_outputImageRGBA,
+                unsigned char **d_redBlurred,
+                unsigned char **d_greenBlurred,
+                unsigned char **d_blueBlurred,
                 const std::string& filename);
 
 void postProcess(const std::string& output_file);
 
 void your_gaussian_blur(const uchar4 * const h_inputImageRGBA, uchar4 * const d_inputImageRGBA,
-                        uchar4* const d_outputImageRGBA, const size_t numRows, const size_t numCols,
-                        const float* const h_filter, const int filterWidth);
+                        uchar4* const d_outputImageRGBA,
+                        const size_t numRows, const size_t numCols,
+                        unsigned char *d_redBlurred,
+                        unsigned char *d_greenBlurred,
+                        unsigned char *d_blueBlurred,
+                        const int filterWidth);
+
+void allocateMemoryAndCopyToGPU(const size_t numRowsImage, const size_t numColsImage,
+                                const float* const h_filter, const size_t filterWidth);
+
+void cleanup();
 
 //include the definitions of the above functions for this homework
 #include "HW2.cpp"
@@ -25,6 +37,7 @@ void your_gaussian_blur(const uchar4 * const h_inputImageRGBA, uchar4 * const d_
 int main(int argc, char **argv) {
   uchar4 *h_inputImageRGBA,  *d_inputImageRGBA;
   uchar4 *h_outputImageRGBA, *d_outputImageRGBA;
+  unsigned char *d_redBlurred, *d_greenBlurred, *d_blueBlurred;
 
   float *h_filter;
   int    filterWidth;
@@ -41,12 +54,15 @@ int main(int argc, char **argv) {
   }
   //load the image and give us our input and output pointers
   preProcess(&h_inputImageRGBA, &h_outputImageRGBA, &d_inputImageRGBA, &d_outputImageRGBA,
+             &d_redBlurred, &d_greenBlurred, &d_blueBlurred,
              &h_filter, &filterWidth, input_file);
 
+  allocateMemoryAndCopyToGPU(numRows(), numCols(), h_filter, filterWidth);
   GpuTimer timer;
   timer.Start();
   //call the students' code
-  your_gaussian_blur(h_inputImageRGBA, d_inputImageRGBA, d_outputImageRGBA, numRows(), numCols(), h_filter, filterWidth);
+  your_gaussian_blur(h_inputImageRGBA, d_inputImageRGBA, d_outputImageRGBA, numRows(), numCols(),
+                     d_redBlurred, d_greenBlurred, d_blueBlurred, filterWidth);
   timer.Stop();
   cudaDeviceSynchronize(); checkCudaErrors(cudaGetLastError());
   int err = printf("e57__TIMING__f82 %f msecs.\n", timer.Elapsed());
@@ -57,8 +73,13 @@ int main(int argc, char **argv) {
     exit(1);
   }
 
+  cleanup();
   //check results and output the blurred image
   postProcess(output_file);
+
+  checkCudaErrors(cudaFree(d_redBlurred));
+  checkCudaErrors(cudaFree(d_greenBlurred));
+  checkCudaErrors(cudaFree(d_blueBlurred));
 
   return 0;
 }

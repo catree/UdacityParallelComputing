@@ -4,14 +4,14 @@
 #include <thrust/extrema.h>
 
 //chroma-LogLuminance Space
-float *d_x__;
-float *d_y__;
-float *d_logY__;
+static float *d_x__;
+static float *d_y__;
+static float *d_logY__;
 
 //memory for the cdf
-unsigned int *d_cdf__;
+static unsigned int *d_cdf__;
 
-const int numBins = 1024;
+static const int numBins = 1024;
 
 size_t numRows__;
 size_t numCols__;
@@ -191,6 +191,7 @@ void preProcess(float** d_luminance, unsigned int** d_cdf,
   //allocate memory for the cdf of the histogram
   *numberOfBins = numBins;
   checkCudaErrors(cudaMalloc(&d_cdf__, sizeof(unsigned int) * numBins));
+  checkCudaErrors(cudaMemset(d_cdf__, 0, sizeof(unsigned int) * numBins));
 
   *d_cdf = d_cdf__;
 
